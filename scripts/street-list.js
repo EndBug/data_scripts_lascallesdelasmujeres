@@ -1,9 +1,28 @@
 'use strict';
 
+const args = require('yargs')
+  .usage('INITIAL STEP: Pass a city name and its OSM relation ID')
+  .epilog('GeoChicas OSM 2020')
+  .alias('h', 'help')
+  .alias('c', 'city')
+  .alias('r', 'relation')
+  .alias('lang', 'language')
+  .describe('c', 'City in your data folder')
+  .describe('r', 'OSM relation ID for that city')
+  .describe('lang', 'main language of the streets names')
+  .demandOption(['c', 'r']).argv;
+
 const filters = require('./filters').filters;
 const fs = require('fs/promises');
 const path = require('path');
 const csv = require('csv');
+const { processCity } = require('./get-streets');
+
+function printArgs() {
+  for (let j = 0; j < args.length; j++) {
+    console.log(j + ' -> ' + args[j]);
+  }
+}
 
 function cleanRoadName(roadName, lang = 'es') {
   const filterList = filters[lang].filter01;
@@ -28,7 +47,6 @@ function cleanRoadName(roadName, lang = 'es') {
 async function prepareListCSV(folder, currentLangs) {
   const dir = path.join(__dirname, `/../data/${folder}`),
     fn = path.join(dir, 'list.csv');
-  // eslint-disable-next-line no-unused-vars
   let numNoName = 0;
 
   await fs.mkdir(dir, { recursive: true });
@@ -88,16 +106,21 @@ async function prepareListCSV(folder, currentLangs) {
       .on('finish', () => {
         fd.close();
         console.log('Finished writing list file.');
-        console.log('Number of streets without name: ', numNoName);
+        console.log('Number of streets without name:', numNoName);
         res();
       });
   });
 }
 
-async function applyGender(folder, currentLangs = ['es']) {
-  prepareListCSV(folder, currentLangs);
-}
+(async () => {
+  printArgs();
+  const city = args.city ? args.city : 'city';
+  const relationIdOSM = args.relation ? args.relation : 1;
+  const language = args.language ? args.language : 'es';
 
-module.exports = {
-  applyGender,
-};
+  const getStreetsResult = await processCity(city, relationIdOSM, language);
+  if (!getStreetsResult) return;
+
+  console.log('\nGenerating streets list...');
+  await prepareListCSV(city, [language]);
+})();

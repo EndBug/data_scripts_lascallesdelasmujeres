@@ -4,7 +4,7 @@
   "description": "Scripts to generate data for the geochicasOSM project, #LasCallesDeLasMujeres",
   "main": "./scripts/index.js",
   "scripts": {
-    "initial-step": "node ./scripts/index",
+    "street-list": "node ./scripts/street-list.js",
     "wikipedia-step": "node ./scripts/apply_wikipedia.js",
     "final-step": "node ./scripts/parse_final.js",
     "lint": "eslint --fix  scripts/**"
