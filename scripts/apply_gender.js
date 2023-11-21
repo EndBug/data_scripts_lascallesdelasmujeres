@@ -3,6 +3,7 @@
 const filters = require('./filters').filters;
 const fs = require('fs/promises');
 const path = require('path');
+const csv = require('csv');
 
 function cleanRoadName(roadName, lang = 'es') {
   const filterList = filters[lang].filter01;
@@ -27,6 +28,7 @@ function cleanRoadName(roadName, lang = 'es') {
 async function prepareListCSV(folder, currentLangs) {
   const dir = path.join(__dirname, `/../data/${folder}`),
     fn = path.join(dir, 'list.csv');
+  // eslint-disable-next-line no-unused-vars
   let numNoName = 0;
 
   await fs.mkdir(dir, { recursive: true });
@@ -40,7 +42,7 @@ async function prepareListCSV(folder, currentLangs) {
     encoding: 'utf8',
     flags: 'a',
   });
-  const linesSet = new Set();
+  const namesSet = new Set();
 
   const data = await fs
     .readFile(path.join(dir, `${folder}_streets.geojson`), 'utf8')
@@ -52,20 +54,44 @@ async function prepareListCSV(folder, currentLangs) {
   const geojson = JSON.parse(data);
   for (const feature of geojson.features) {
     if (feature.properties && feature.properties.name) {
-      const roadName = feature.properties.name;
-      const cleanName = currentLangs.reduce((name, lang) => cleanRoadName(name, lang), roadName);
-
-      linesSet.add(`${feature.properties.name};${cleanName}\n`);
+      namesSet.add(feature.properties.name);
     } else {
       numNoName++;
     }
   }
 
-  linesSet.forEach((line) => logStream.write(line));
-  logStream.end();
-  await fd.close();
+  const stringifier = csv.stringify({
+    delimiter: ';',
+    header: true,
+    columns: ['streetName', 'cleanName'],
+  });
 
-  console.log(`Number of streets without name: ${numNoName}`);
+  namesSet.forEach((streetName) => {
+    const cleanName = currentLangs.reduce((name, lang) => cleanRoadName(name, lang), streetName);
+    stringifier.write([streetName, cleanName]);
+  });
+
+  return new Promise((res, rej) => {
+    stringifier
+      .on('error', (err) => {
+        console.error('Error on strigifier stream.');
+        rej(err);
+      })
+      .end()
+      .pipe(logStream);
+
+    logStream
+      .on('error', (err) => {
+        console.error('Error on log stream.');
+        rej(err);
+      })
+      .on('finish', () => {
+        fd.close();
+        console.log('Finished writing list file.');
+        console.log('Number of streets without name: ', numNoName);
+        res();
+      });
+  });
 }
 
 async function applyGender(folder, currentLangs = ['es']) {
