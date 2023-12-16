@@ -27,17 +27,20 @@ const COL_WIKIPEDIA = 8;
 const DELIMITATION = ';';
 
 const streeMap = new Map();
-const lr = new LineByLineReader(path.join(__dirname, `../data/${folder}/${folder}_finalCSV.csv`), {
-  encoding: 'utf8',
-  skipEmptyLines: true,
-});
+const lr = new LineByLineReader(
+  path.join(__dirname, `../data/${folder}/${folder}_finalCSV.csv`),
+  {
+    encoding: 'utf8',
+    skipEmptyLines: true,
+  }
+);
 
-lr.on('error', function (/* err */) {});
+lr.on('error', (/* err */) => {});
 
-lr.on('line', function (line) {
+lr.on('line', line => {
   lr.pause();
 
-  var splitLine = line.split(DELIMITATION);
+  const splitLine = line.split(DELIMITATION);
 
   //Male case
   if (splitLine[COL_GENDER].toLowerCase() === MALE) {
@@ -51,8 +54,9 @@ lr.on('line', function (line) {
   } else if (splitLine[COL_GENDER].toLowerCase() === FEMALE) {
     //Female case
 
-    var url = '';
-    if (splitLine.length > 5 && splitLine[COL_WIKIPEDIA] !== '') url = splitLine[COL_WIKIPEDIA];
+    let url = '';
+    if (splitLine.length > 5 && splitLine[COL_WIKIPEDIA] !== '')
+      url = splitLine[COL_WIKIPEDIA];
 
     streeMap.set(splitLine[COL_FULL_NAME], {
       url: url,
@@ -68,7 +72,7 @@ lr.on('line', function (line) {
   }
 });
 
-lr.on('end', function () {
+lr.on('end', () => {
   readGeojson();
 });
 
@@ -102,7 +106,7 @@ function readGeojson() {
         features: [],
       };
 
-      for (let key in geojson.features) {
+      for (const key in geojson.features) {
         if (streeMap.has(geojson.features[key].properties.name)) {
           const objValues = streeMap.get(geojson.features[key].properties.name);
 
@@ -138,7 +142,7 @@ function readGeojson() {
         path.join(__dirname, `../data/${folder}/final_tile.geojson`),
         JSON.stringify(finalGeojson),
         'utf8',
-        (err) => {
+        err => {
           if (err) {
             console.error(err);
             throw err;
@@ -159,7 +163,7 @@ function readGeojson() {
         path.join(__dirname, `../data/${folder}/stats.txt`),
         JSON.stringify(stats),
         'utf8',
-        (err) => {
+        err => {
           if (err) {
             console.error(err);
             throw err;
@@ -172,7 +176,7 @@ function readGeojson() {
         path.join(__dirname, `../data/${folder}/noLinkList.txt`),
         noLinkList,
         'utf8',
-        (err) => {
+        err => {
           if (err) {
             console.error(err);
             throw err;
