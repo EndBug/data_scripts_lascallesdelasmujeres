@@ -2,23 +2,15 @@
 
 import * as path from 'path';
 import * as csv from 'csv';
+import yargs from 'yargs';
+import {hideBin} from 'yargs/helpers';
 import LineByLineReader from 'line-by-line';
-import wikidataLookup from 'wikidata-entity-lookup';
+import * as wikidataLookup from 'wikidata-entity-lookup';
 import {WikibaseEntityReader} from 'wikidata-entity-reader';
 import axios from 'axios';
-import {Gender, cachedMen, cachedWomen} from './commons';
-
-const args = require('yargs')
-  .usage(
-    'WIKIPEDIA STEP: Pass a city name and the flag --keepUnknown in case you want to keep the unclassified streets. '
-  )
-  .epilog('GeoChicas OSM 2020')
-  .alias('h', 'help')
-  .alias('c', 'city')
-  .alias('ku', 'keepUnknown')
-  .describe('c', 'City in your data folder')
-  .describe('ku', 'To keep unclassified streets')
-  .demandOption(['c']).argv;
+import {Cache, Gender, cachePerson, cachedMen, cachedWomen} from './commons';
+import {Language, isLanguage} from './languages';
+import {createWriteStream} from 'fs';
 
 /**
  * An object where the key is the recognized gender, and the value is an array
@@ -121,11 +113,89 @@ async function classifyWikidataEntry(id: string): Promise<Gender> {
   return conclusion;
 }
 
-(() => {
+/**
+ * Gets the Wikipedia links for a given entity
+ * @param wikidataID The ID of the entity to look up
+ * @param languages The languages to get links for
+ * @returns The data for a cached woman entry
+ */
+async function getEntityLinks(
+  wikidataID: string,
+  languages: Language[]
+): Promise<Cache<Gender.Woman>[string]> {
+  const response = await axios.get(
+    `https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&ids=${wikidataID}&props=sitelinks/urls`
+  );
+
+  const links: Record<
+    string,
+    {site: string; title: string; badges: unknown[]; url: string}
+  > = response.data.entities[wikidataID].sitelinks;
+
+  const res = {} as Cache<Gender.Woman>[string];
+
+  languages.forEach(lang => {
+    const langData = links[`${lang}wiki`];
+
+    if (langData) {
+      res[lang] = {
+        label: langData.title,
+        wikipedia: langData.url,
+      };
+    }
+  });
+
+  return res;
+}
+
+(async () => {
+  const args = await yargs(hideBin(process.argv))
+    .usage(
+      'WIKIPEDIA STEP: Pass a city name and the flag --keepUnknown in case you want to keep the unclassified streets. '
+    )
+    .epilog('GeoChicas OSM 2020')
+    .alias('h', 'help')
+    .alias('c', 'city')
+    .alias('lang', 'language')
+    .alias('ku', 'keepUnknown')
+    .describe('c', 'City in your data folder')
+    .describe('ku', 'To keep unclassified streets')
+    .describe('lang', 'main language of the streets names')
+    .demandOption(['c', 'lang']).argv;
+
+  const langs: Language[] = [];
+  if (isLanguage(args.lang)) langs.push(args.lang);
+  if (!langs.includes('en')) langs.push('en');
+
   const listFn = path.join(__dirname, `../data/${args.city}/list.csv`);
+  const foundFn = path.join(__dirname, `../data/${args.city}/list_wiki.csv`);
+  const unsureFn = path.join(__dirname, `../data/${args.city}/list_unsure.csv`);
 
   const lr = new LineByLineReader(listFn);
   const parser = csv.parse({delimiter: ';', fromLine: 2});
+
+  const foundStream = createWriteStream(foundFn, 'utf-8');
+  const unsureStream = createWriteStream(unsureFn, 'utf-8');
+
+  const foundStringifier = csv.stringify({
+    delimiter: ';',
+    header: true,
+    columns: ['streetName', 'gender', 'wikiJSON'],
+  });
+  foundStringifier.pipe(foundStream).on('error', err => {
+    console.error('Error writing found file.');
+    throw err;
+  });
+
+  const unsureStringifier = csv.stringify({
+    delimiter: ';',
+    header: true,
+    columns: ['streetName', 'cleanName'],
+  });
+  unsureStringifier.pipe(unsureStream).on('error', err => {
+    console.error('Error writing unsure file.');
+    throw err;
+  });
 
   lr.on('line', line => parser.write(line + '\n'))
     .on('end', () => {
@@ -143,12 +213,26 @@ async function classifyWikidataEntry(id: string): Promise<Gender> {
       throw err;
     })
     .on('readable', async () => {
+      /** [streetName, cleanName] */
       let record: [string, string];
 
       while ((record = parser.read()) !== null) {
         const name = record[1];
 
         const [id, gender] = await classifyName(name);
+
+        if (gender === Gender.Unknown) unsureStringifier.write(record);
+        else if (gender === Gender.Man) {
+          cachePerson(id, gender);
+          foundStringifier.write([record[0], gender, '']);
+        } else {
+          const links = await getEntityLinks(id, langs);
+          cachePerson(id, gender, links);
+          foundStringifier.write([record[0], gender, JSON.stringify(links)]);
+        }
       }
+
+      foundStringifier.end();
+      unsureStringifier.end();
     });
 })();

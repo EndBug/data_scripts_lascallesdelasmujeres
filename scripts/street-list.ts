@@ -85,6 +85,7 @@ async function prepareListCSV(
     header: true,
     columns: ['streetName', 'cleanName'],
   });
+  stringifier.pipe(logStream);
 
   namesSet.forEach(streetName => {
     const cleanName = currentLangs.reduce(
@@ -100,8 +101,7 @@ async function prepareListCSV(
         console.error('Error on strigifier stream.');
         rej(err);
       })
-      .end()
-      .pipe(logStream);
+      .end();
 
     logStream
       .on('error', err => {

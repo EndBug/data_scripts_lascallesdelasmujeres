@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import {Feature} from 'geojson';
+import {Language} from './languages';
 
 /** An enum, where genders are initialized with the respective Wikidata entity IDs (see claim P21) */
 export enum Gender {
@@ -10,12 +11,13 @@ export enum Gender {
 
 export type Cache<T extends Gender> = T extends Gender.Woman
   ? {
-      [wikidataID: string]: {
-        [language: string]: {
+      [wikidataID: string]: Record<
+        Language,
+        {
           label: string;
           wikipedia: string;
-        };
-      };
+        }
+      >;
     }
   : string[];
 

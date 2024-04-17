@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import * as overpass from 'query-overpass';
+import overpass from 'query-overpass';
 import booleanContains from '@turf/boolean-contains';
 import flatten from '@turf/flatten';
 import bbox from '@turf/bbox';
