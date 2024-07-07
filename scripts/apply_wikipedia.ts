@@ -5,11 +5,18 @@ import * as csv from 'csv';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
 import LineByLineReader from 'line-by-line';
-import * as wikidataLookup from 'wikidata-entity-lookup';
+import wikidataLookup from 'wikidata-entity-lookup';
 import {WikibaseEntityReader} from 'wikidata-entity-reader';
 import axios from 'axios';
-import {Cache, Gender, cachePerson, cachedMen, cachedWomen} from './commons';
-import {Language, isLanguage} from './languages';
+import {
+  type Cache,
+  Gender,
+  cachePerson,
+  cachedMen,
+  cachedWomen,
+  writeCache,
+} from './commons';
+import {type Language, isLanguage} from './languages';
 import {createWriteStream} from 'fs';
 
 /**
@@ -61,7 +68,7 @@ async function getWikidataIds(name: string): Promise<string[]> {
       console.error(err);
     })) || [];
 
-  return results.map((r: any) => r.id.split('/').pop());
+  return results.map(r => r.id.split('/').pop() ?? '');
 }
 
 /**
@@ -107,8 +114,8 @@ async function classifyWikidataEntry(id: string): Promise<Gender> {
   const conclusion = isWoman
     ? Gender.Woman
     : isMan
-    ? Gender.Man
-    : Gender.Unknown;
+      ? Gender.Man
+      : Gender.Unknown;
 
   return conclusion;
 }
@@ -167,9 +174,12 @@ async function getEntityLinks(
   if (isLanguage(args.lang)) langs.push(args.lang);
   if (!langs.includes('en')) langs.push('en');
 
-  const listFn = path.join(__dirname, `../data/${args.city}/list.csv`);
-  const foundFn = path.join(__dirname, `../data/${args.city}/list_wiki.csv`);
-  const unsureFn = path.join(__dirname, `../data/${args.city}/list_unsure.csv`);
+  const listFn = path.join(__dirname, `../data/${args['city']}/list.csv`);
+  const foundFn = path.join(__dirname, `../data/${args['city']}/list_wiki.csv`);
+  const unsureFn = path.join(
+    __dirname,
+    `../data/${args['city']}/list_unsure.csv`
+  );
 
   const lr = new LineByLineReader(listFn);
   const parser = csv.parse({delimiter: ';', fromLine: 2});
@@ -182,10 +192,14 @@ async function getEntityLinks(
     header: true,
     columns: ['streetName', 'gender', 'wikiJSON'],
   });
-  foundStringifier.pipe(foundStream).on('error', err => {
+  foundStringifier.pipe(foundStream);
+
+  foundStringifier.on('error', err => {
     console.error('Error writing found file.');
     throw err;
   });
+
+  foundStringifier.on('end', () => foundStream.end());
 
   const unsureStringifier = csv.stringify({
     delimiter: ';',
@@ -232,6 +246,7 @@ async function getEntityLinks(
         }
       }
 
+      writeCache();
       foundStringifier.end();
       unsureStringifier.end();
     });

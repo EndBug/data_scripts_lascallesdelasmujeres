@@ -6,11 +6,17 @@ import flatten from '@turf/flatten';
 import bbox from '@turf/bbox';
 import bboxPolygon from '@turf/bbox-polygon';
 import centerOfMass from '@turf/center-of-mass';
-import {Feature, FeatureCollection, LineString, Point, Polygon} from 'geojson';
+import type {
+  Feature,
+  FeatureCollection,
+  LineString,
+  Point,
+  Polygon,
+  BBox,
+} from 'geojson';
 import * as bboxSplit from 'boundingbox-split';
 
 import {writeFeatures} from './commons';
-import {BBox} from 'geojson';
 
 /**
  * Gets the boundary of a city from OpenStreetMap
@@ -32,7 +38,7 @@ function getBoundary(
       }
 
       const relationFeatures = data.features.filter(
-        el => el.properties?.type === 'relation'
+        el => el.properties?.['type'] === 'relation'
       );
 
       if (relationFeatures.length === 0) {
@@ -80,9 +86,9 @@ function getOverPassData(
                   ...feature,
                   properties: {
                     name:
-                      feature.properties?.tags[`name:${language}`] ||
-                      feature.properties?.tags.name,
-                    id: feature.properties?.id,
+                      feature.properties?.['tags'][`name:${language}`] ||
+                      feature.properties?.['tags'].name,
+                    id: feature.properties?.['id'],
                     wikipedia_link: '',
                     gender: 'unknown',
                   },

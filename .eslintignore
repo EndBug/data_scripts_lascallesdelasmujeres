@@ -1,1 +1,4 @@
 build/
+
+# Ignore legacy scripts
+scripts/*.js

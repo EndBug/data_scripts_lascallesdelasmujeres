@@ -1,13 +1,12 @@
 {
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "rootDir": ".",
-    "outDir": "build",
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "typeRoots": [
-      "./node_modules/@types",
-      "./types"
-    ]
+      "./types",
+      "./node_modules/@types"
+    ],
   },
   "include": [
     "types/**/*.d.ts",

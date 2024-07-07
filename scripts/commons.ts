@@ -1,6 +1,7 @@
 import * as fs from 'fs';
-import {Feature} from 'geojson';
-import {Language} from './languages';
+import * as path from 'path';
+import {type Feature} from 'geojson';
+import {type Language} from './languages';
 
 /** An enum, where genders are initialized with the respective Wikidata entity IDs (see claim P21) */
 export enum Gender {
@@ -21,9 +22,10 @@ export type Cache<T extends Gender> = T extends Gender.Woman
     }
   : string[];
 
-export const cachedWomen =
-    require('../cache/women-wikidata.json') as Cache<Gender.Woman>,
-  cachedMen = require('../cache/men-wikidata.json') as Cache<Gender.Man>;
+import cachedWomenData from '../cache/women-wikidata.json';
+import cachedMenData from '../cache/men-wikidata.json';
+export const cachedWomen = cachedWomenData as Cache<Gender.Woman>,
+  cachedMen = cachedMenData as Cache<Gender.Man>;
 
 /**
  * Stores a person in the local cache. Call {@link writeCache} to write the cache to disk
@@ -45,7 +47,7 @@ export function cachePerson(
   if (gender === Gender.Woman) {
     cachedWomen[wikidataID] = {
       ...(cachedWomen[wikidataID] || {}),
-      ...data,
+      ...(data ?? {}),
     };
   } else {
     cachedMen.push(wikidataID);
@@ -55,12 +57,12 @@ export function cachePerson(
 /** Saves caches to disk */
 export function writeCache() {
   fs.writeFileSync(
-    '../cache/women-wikidata.json',
+    path.join(__dirname, '../cache/women-wikidata.json'),
     JSON.stringify(cachedWomen, null, 2),
     'utf-8'
   );
   fs.writeFileSync(
-    '../cache/men-wikidata.json',
+    path.join(__dirname, '../cache/men-wikidata.json'),
     JSON.stringify(cachedMen, null, 2),
     'utf-8'
   );
