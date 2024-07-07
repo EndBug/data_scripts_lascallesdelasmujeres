@@ -18,6 +18,7 @@ import {
 } from './commons';
 import {type Language, isLanguage} from './languages';
 import {createWriteStream} from 'fs';
+import {AsyncTransform} from './utils';
 
 /**
  * An object where the key is the recognized gender, and the value is an array
@@ -184,29 +185,51 @@ async function getEntityLinks(
   const lr = new LineByLineReader(listFn);
   const parser = csv.parse({delimiter: ';', fromLine: 2});
 
-  const foundStream = createWriteStream(foundFn, 'utf-8');
-  const unsureStream = createWriteStream(unsureFn, 'utf-8');
+  const recordProcessor = new AsyncTransform<
+    [string, string],
+    {
+      identified: boolean;
+      record: [string, string, string];
+    }
+  >(async record => {
+    const name = record[1];
+
+    const [id, gender] = await classifyName(name);
+
+    if (gender === Gender.Unknown)
+      return {identified: false, record: [...record, '']};
+    else if (gender === Gender.Man) {
+      cachePerson(id, gender);
+      return {identified: true, record: [record[0], gender, '']};
+    } else {
+      const links = await getEntityLinks(id, langs);
+      cachePerson(id, gender, links);
+      return {
+        identified: true,
+        record: [record[0], gender, JSON.stringify(links)],
+      };
+    }
+  });
 
   const foundStringifier = csv.stringify({
     delimiter: ';',
     header: true,
     columns: ['streetName', 'gender', 'wikiJSON'],
   });
-  foundStringifier.pipe(foundStream);
-
-  foundStringifier.on('error', err => {
-    console.error('Error writing found file.');
-    throw err;
-  });
-
-  foundStringifier.on('end', () => foundStream.end());
-
   const unsureStringifier = csv.stringify({
     delimiter: ';',
     header: true,
     columns: ['streetName', 'cleanName'],
   });
-  unsureStringifier.pipe(unsureStream).on('error', err => {
+
+  const foundFileStream = createWriteStream(foundFn, 'utf-8');
+  const unsureFileStream = createWriteStream(unsureFn, 'utf-8');
+
+  foundStringifier.on('error', err => {
+    console.error('Error writing found file.');
+    throw err;
+  });
+  unsureStringifier.on('error', err => {
     console.error('Error writing unsure file.');
     throw err;
   });
@@ -221,33 +244,24 @@ async function getEntityLinks(
       throw err;
     });
 
+  foundStringifier.pipe(foundFileStream);
+  unsureStringifier.pipe(unsureFileStream);
+
   parser
-    .on('err', err => {
-      console.error('Error parsing list file.');
-      throw err;
+    .pipe(recordProcessor)
+    .on('data', data => {
+      if (data.identified) foundStringifier.write(data.record);
+      else unsureStringifier.write(data.record);
     })
-    .on('readable', async () => {
-      /** [streetName, cleanName] */
-      let record: [string, string];
-
-      while ((record = parser.read()) !== null) {
-        const name = record[1];
-
-        const [id, gender] = await classifyName(name);
-
-        if (gender === Gender.Unknown) unsureStringifier.write(record);
-        else if (gender === Gender.Man) {
-          cachePerson(id, gender);
-          foundStringifier.write([record[0], gender, '']);
-        } else {
-          const links = await getEntityLinks(id, langs);
-          cachePerson(id, gender, links);
-          foundStringifier.write([record[0], gender, JSON.stringify(links)]);
-        }
-      }
-
+    .on('error', err => {
+      console.error('Error processing records.', err);
+    })
+    .on('end', () => {
+      console.log('List classified.');
       writeCache();
       foundStringifier.end();
       unsureStringifier.end();
+      // eslint-disable-next-line no-process-exit
+      process.exit(0);
     });
 })();
