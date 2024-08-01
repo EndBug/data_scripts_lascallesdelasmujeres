@@ -163,6 +163,8 @@ export const filters = {
       'Vicolo cieco',
       'Salitaletto',
       'Contradella',
+      'Via privata',
+      'Cavalcavia',
       'Vlt. priv.',
       'Vcl. cieco',
       'Piazzetta',

@@ -42,12 +42,6 @@
     "@types/yargs": "^17.0.32",
     "bun": "^1.1.0",
     "eslint-plugin-prettier": "^5.0.1",
-    "gts": "^5.2.0",
-    "husky": "^4.2.5"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npx bun run lint"
-    }
+    "gts": "^5.2.0"
   }
 }
