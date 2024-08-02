@@ -11,21 +11,18 @@ export enum Gender {
 }
 
 export type Cache<T extends Gender> = T extends Gender.Woman
-  ? {
-      [wikidataID: string]: Record<
-        Language,
-        {
-          label: string;
-          wikipedia: string;
-        }
-      >;
-    }
+  ? Map<string, CachedWomanEntryValue>
   : string[];
+export type CachedWomanEntryValue = Partial<
+  Record<Language, {label: string; wikipedia: string}>
+>;
 
 import cachedWomenData from '../cache/women-wikidata.json';
 import cachedMenData from '../cache/men-wikidata.json';
-export const cachedWomen = cachedWomenData as Cache<Gender.Woman>,
-  cachedMen = cachedMenData as Cache<Gender.Man>;
+export const cachedWomen: Cache<Gender.Woman> = new Map(
+    Object.entries(cachedWomenData)
+  ),
+  cachedMen: Cache<Gender.Man> = cachedMenData;
 
 /**
  * Stores a person in the local cache. Call {@link writeCache} to write the cache to disk
@@ -36,19 +33,19 @@ export const cachedWomen = cachedWomenData as Cache<Gender.Woman>,
 export function cachePerson(
   wikidataID: string,
   gender: Gender.Woman,
-  data: Cache<Gender.Woman>[string]
+  data: CachedWomanEntryValue
 ): void;
 export function cachePerson(wikidataID: string, gender: Gender.Man): void;
 export function cachePerson(
   wikidataID: string,
   gender: Gender.Woman | Gender.Man,
-  data?: Cache<Gender.Woman>[string]
+  data?: CachedWomanEntryValue
 ): void {
   if (gender === Gender.Woman) {
-    cachedWomen[wikidataID] = {
-      ...(cachedWomen[wikidataID] || {}),
+    cachedWomen.set(wikidataID, {
+      ...(cachedWomen.get(wikidataID) || {}),
       ...(data ?? {}),
-    };
+    });
   } else {
     cachedMen.push(wikidataID);
   }
@@ -58,7 +55,8 @@ export function cachePerson(
 export function writeCache() {
   fs.writeFileSync(
     path.join(__dirname, '../cache/women-wikidata.json'),
-    JSON.stringify(cachedWomen, null, 2),
+    // eslint-disable-next-line node/no-unsupported-features/es-builtins
+    JSON.stringify(Object.fromEntries(cachedWomen.entries()), null, 2),
     'utf-8'
   );
   fs.writeFileSync(

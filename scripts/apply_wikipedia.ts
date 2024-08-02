@@ -4,21 +4,21 @@ import * as path from 'path';
 import * as csv from 'csv';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
-import LineByLineReader from 'line-by-line';
 import wikidataLookup from 'wikidata-entity-lookup';
 import {WikibaseEntityReader} from 'wikidata-entity-reader';
 import axios from 'axios';
 import {
-  type Cache,
   Gender,
   cachePerson,
   cachedMen,
   cachedWomen,
   writeCache,
+  CachedWomanEntryValue,
 } from './commons';
 import {type Language, isLanguage} from './languages';
-import {createWriteStream} from 'fs';
+import {createWriteStream, readFileSync} from 'fs';
 import {AsyncTransform} from './utils';
+import ProgressBar from 'progress';
 
 /**
  * An object where the key is the recognized gender, and the value is an array
@@ -38,23 +38,30 @@ const genderClassifiers: Record<Gender.Woman | Gender.Man, string[]> = {
  */
 async function classifyName(
   name: string
-): Promise<[undefined, Gender.Unknown] | [string, Gender.Woman | Gender.Man]> {
+): Promise<
+  | [undefined, Gender.Unknown, false]
+  | [string, Gender.Woman | Gender.Man, boolean]
+> {
   const ids = await getWikidataIds(name);
   if (!ids || ids.length === 0) {
-    console.log(`No wikidata ID found for ${name}`);
-    return [undefined, Gender.Unknown];
+    // console.log(`No wikidata ID found for ${name}`);
+    return [undefined, Gender.Unknown, false];
   }
 
   let maleEntry: string | undefined;
+  let maleEntryCached = false;
   for (const id of ids) {
-    const res = await classifyWikidataEntry(id);
+    const {gender: res, cached} = await classifyWikidataEntry(id);
 
-    if (res === Gender.Woman) return [id, res];
-    if (res === Gender.Man) maleEntry = id;
+    if (res === Gender.Woman) return [id, res, cached];
+    if (res === Gender.Man) {
+      maleEntry = id;
+      maleEntryCached = cached;
+    }
   }
 
-  if (maleEntry !== undefined) return [maleEntry, Gender.Man];
-  else return [undefined, Gender.Unknown];
+  if (maleEntry !== undefined) return [maleEntry, Gender.Man, maleEntryCached];
+  else return [undefined, Gender.Unknown, false];
 }
 
 /**
@@ -75,9 +82,12 @@ async function getWikidataIds(name: string): Promise<string[]> {
 /**
  * Queries the Wikidata API to get claims for a given ID, then checks for the "sex or gender" claim (P21)
  */
-async function classifyWikidataEntry(id: string): Promise<Gender> {
-  if (cachedWomen[id] !== undefined) return Gender.Woman;
-  if (cachedMen.includes(id)) return Gender.Man;
+async function classifyWikidataEntry(
+  id: string
+): Promise<{gender: Gender; cached: boolean}> {
+  if (cachedWomen.get(id) !== undefined)
+    return {gender: Gender.Woman, cached: true};
+  if (cachedMen.includes(id)) return {gender: Gender.Man, cached: true};
 
   const response = await axios
     .get(
@@ -88,7 +98,7 @@ async function classifyWikidataEntry(id: string): Promise<Gender> {
       console.error(err);
     });
 
-  if (!response) return Gender.Unknown;
+  if (!response) return {gender: Gender.Unknown, cached: false};
 
   const reader = new WikibaseEntityReader(response.data, 'en');
 
@@ -118,7 +128,7 @@ async function classifyWikidataEntry(id: string): Promise<Gender> {
       ? Gender.Man
       : Gender.Unknown;
 
-  return conclusion;
+  return {gender: conclusion, cached: false};
 }
 
 /**
@@ -130,7 +140,7 @@ async function classifyWikidataEntry(id: string): Promise<Gender> {
 async function getEntityLinks(
   wikidataID: string,
   languages: Language[]
-): Promise<Cache<Gender.Woman>[string]> {
+): Promise<CachedWomanEntryValue> {
   const response = await axios.get(
     `https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&ids=${wikidataID}&props=sitelinks/urls`
   );
@@ -140,7 +150,7 @@ async function getEntityLinks(
     {site: string; title: string; badges: unknown[]; url: string}
   > = response.data.entities[wikidataID].sitelinks;
 
-  const res = {} as Cache<Gender.Woman>[string];
+  const res = {} as CachedWomanEntryValue;
 
   languages.forEach(lang => {
     const langData = links[`${lang}wiki`];
@@ -182,8 +192,11 @@ async function getEntityLinks(
     `../data/${args['city']}/list_unsure.csv`
   );
 
-  const lr = new LineByLineReader(listFn);
-  const parser = csv.parse({delimiter: ';', fromLine: 2});
+  const lines = readFileSync(listFn, 'utf-8').split('\n');
+  const parser = csv.parse({delimiter: ';'});
+
+  let foundCounter = 0,
+    cacheHitsCounter = 0;
 
   const recordProcessor = new AsyncTransform<
     [string, string],
@@ -194,7 +207,9 @@ async function getEntityLinks(
   >(async record => {
     const name = record[1];
 
-    const [id, gender] = await classifyName(name);
+    const [id, gender, cached] = await classifyName(name);
+
+    if (cached) cacheHitsCounter++;
 
     if (gender === Gender.Unknown)
       return {identified: false, record: [...record, '']};
@@ -234,15 +249,15 @@ async function getEntityLinks(
     throw err;
   });
 
-  lr.on('line', line => parser.write(line + '\n'))
-    .on('end', () => {
-      console.log('List file read correctly.');
-      parser.end();
-    })
-    .on('error', err => {
-      console.error('Error reading list file.');
-      throw err;
-    });
+  const progressBar = new ProgressBar(
+    'Progress: [:bar] :current/:total :percent :etas | Cache hits: :cacheHits',
+    {
+      total: lines.length - 1,
+      complete: '=',
+      incomplete: ' ',
+      width: 50,
+    }
+  );
 
   foundStringifier.pipe(foundFileStream);
   unsureStringifier.pipe(unsureFileStream);
@@ -250,8 +265,13 @@ async function getEntityLinks(
   parser
     .pipe(recordProcessor)
     .on('data', data => {
-      if (data.identified) foundStringifier.write(data.record);
-      else unsureStringifier.write(data.record);
+      if (data.identified) {
+        foundStringifier.write(data.record);
+
+        foundCounter++;
+        if (foundCounter % 50 === 0) writeCache();
+      } else unsureStringifier.write(data.record);
+      progressBar.tick({cacheHits: cacheHitsCounter});
     })
     .on('error', err => {
       console.error('Error processing records.', err);
@@ -261,7 +281,7 @@ async function getEntityLinks(
       writeCache();
       foundStringifier.end();
       unsureStringifier.end();
-      // eslint-disable-next-line no-process-exit
-      process.exit(0);
     });
-})();
+
+  lines.slice(1).forEach(line => parser.write(line + '\n'));
+})().catch(console.error);
