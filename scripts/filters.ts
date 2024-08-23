@@ -191,6 +191,7 @@ export const filters = {
       'Vicolo',
       'Salita',
       'Vicolo',
+      'Largo',
       'Corso',
       'Lungo',
       'Rione',

@@ -13,9 +13,11 @@ import {
   cachedMen,
   cachedWomen,
   writeCache,
-  CachedWomanEntryValue,
+  getLinksLanguages,
+  cachedUnknown,
+  getEntityLinks,
 } from './commons';
-import {type Language, isLanguage} from './languages';
+import {type Language} from './languages';
 import {createWriteStream, readFileSync} from 'fs';
 import {AsyncTransform} from './utils';
 import ProgressBar from 'progress';
@@ -131,41 +133,6 @@ async function classifyWikidataEntry(
   return {gender: conclusion, cached: false};
 }
 
-/**
- * Gets the Wikipedia links for a given entity
- * @param wikidataID The ID of the entity to look up
- * @param languages The languages to get links for
- * @returns The data for a cached woman entry
- */
-async function getEntityLinks(
-  wikidataID: string,
-  languages: Language[]
-): Promise<CachedWomanEntryValue> {
-  const response = await axios.get(
-    `https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&ids=${wikidataID}&props=sitelinks/urls`
-  );
-
-  const links: Record<
-    string,
-    {site: string; title: string; badges: unknown[]; url: string}
-  > = response.data.entities[wikidataID].sitelinks;
-
-  const res = {} as CachedWomanEntryValue;
-
-  languages.forEach(lang => {
-    const langData = links[`${lang}wiki`];
-
-    if (langData) {
-      res[lang] = {
-        label: langData.title,
-        wikipedia: langData.url,
-      };
-    }
-  });
-
-  return res;
-}
-
 (async () => {
   const args = await yargs(hideBin(process.argv))
     .usage(
@@ -181,9 +148,7 @@ async function getEntityLinks(
     .describe('lang', 'main language of the streets names')
     .demandOption(['c', 'lang']).argv;
 
-  const langs: Language[] = [];
-  if (isLanguage(args.lang)) langs.push(args.lang);
-  if (!langs.includes('en')) langs.push('en');
+  const langs = getLinksLanguages(args.lang as Language);
 
   const listFn = path.join(__dirname, `../data/${args['city']}/list.csv`);
   const foundFn = path.join(__dirname, `../data/${args['city']}/list_wiki.csv`);
@@ -207,22 +172,35 @@ async function getEntityLinks(
   >(async record => {
     const name = record[1];
 
-    const [id, gender, cached] = await classifyName(name);
+    let [id, gender, cached] = await classifyName(name);
+
+    if (gender === Gender.Unknown) {
+      const cachedUnknownEntry = cachedUnknown.get(name);
+      if (cachedUnknownEntry) {
+        id = cachedUnknownEntry.wikidataId;
+        gender = cachedUnknownEntry.gender;
+        cached = true;
+      }
+    }
 
     if (cached) cacheHitsCounter++;
 
     if (gender === Gender.Unknown)
       return {identified: false, record: [...record, '']};
-    else if (gender === Gender.Man) {
-      cachePerson(id, gender);
-      return {identified: true, record: [record[0], gender, '']};
-    } else {
-      const links = await getEntityLinks(id, langs);
-      cachePerson(id, gender, links);
-      return {
-        identified: true,
-        record: [record[0], gender, JSON.stringify(links)],
-      };
+    else {
+      if (id) {
+        if (gender === Gender.Man) {
+          cachePerson(id, gender);
+          return {identified: true, record: [record[0], gender, '']};
+        } else {
+          const links = await getEntityLinks(id, langs);
+          cachePerson(id, gender, links);
+          return {
+            identified: true,
+            record: [record[0], gender, JSON.stringify(links)],
+          };
+        }
+      } else return {identified: true, record: [record[0], gender, '']};
     }
   });
 
