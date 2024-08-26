@@ -18,29 +18,31 @@ export const isGender = (value: any): value is Gender =>
   value.length === 1 &&
   (Object.values(Gender) as string[]).includes(value);
 
-export type Cache<T extends Gender> = T extends Gender.Woman
+export type PersonCache<T extends Gender> = T extends Gender.Woman
   ? Map<string, CachedWomanEntryValue>
   : T extends Gender.Man
     ? string[]
-    : Map<string, CachedUnknownEntryValue>;
+    : never;
 export type CachedWomanEntryValue = Partial<
   Record<Language, {label: string; wikipedia: string}>
 >;
-export type CachedUnknownEntryValue = {
+
+export type StreetCache = Map<string, CachedStreetEntryValue>;
+export type CachedStreetEntryValue = {
   gender: Gender;
   wikidataId?: string;
 };
 
 import cachedWomenData from '../cache/women-wikidata.json';
 import cachedMenData from '../cache/men-wikidata.json';
-import cachedUnknownData from '../cache/unknown.json';
-export const cachedWomen: Cache<Gender.Woman> = new Map(
+import cachedStreetsData from '../cache/streets.json';
+export const cachedWomen: PersonCache<Gender.Woman> = new Map(
     Object.entries(cachedWomenData)
   ),
-  cachedMen: Cache<Gender.Man> = cachedMenData,
-  cachedUnknown: Cache<Gender.Unknown> = new Map(
-    Object.entries(cachedUnknownData)
-  );
+  cachedMen: PersonCache<Gender.Man> = cachedMenData,
+  cachedStreets: StreetCache = new Map(
+    Object.entries(cachedStreetsData)
+  ) as StreetCache;
 
 /**
  * Stores a person in the local cache. Call {@link writeCache} to write the cache to disk
@@ -69,19 +71,14 @@ export function cachePerson(
   }
 }
 
-/** Caches the resolution of an unknown entity */
-export function cacheUnknown(streetName: string, gender: Gender.Unknown): void;
-export function cacheUnknown(
-  streetName: string,
-  gender: Gender.Woman | Gender.Man,
-  wikidataId: string | undefined
-): void;
-export function cacheUnknown(
+/** Caches the resolution of a street name */
+
+export function cacheStreet(
   streetName: string,
   gender: Gender,
   wikidataId?: string
 ): void {
-  cachedUnknown.set(streetName, {gender, wikidataId});
+  cachedStreets.set(streetName, {gender, wikidataId});
 }
 
 /**
@@ -133,9 +130,9 @@ export function writeCache() {
     'utf-8'
   );
   fs.writeFileSync(
-    path.join(__dirname, '../cache/unknown.json'),
+    path.join(__dirname, '../cache/streets.json'),
     // eslint-disable-next-line n/no-unsupported-features/es-builtins
-    JSON.stringify(Object.fromEntries(cachedUnknown.entries()), null, 2),
+    JSON.stringify(Object.fromEntries(cachedStreets.entries()), null, 2),
     'utf-8'
   );
 }

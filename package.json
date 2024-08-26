@@ -8,6 +8,7 @@
   "scripts": {
     "street-list": "bun run scripts/street-list.ts",
     "wikipedia-step": "bun run ./scripts/apply_wikipedia.ts",
+    "inspect-unsure": "bun run ./scripts/inspect_unsure.ts",
     "final-step": "node ./scripts/parse_final.js",
     "lint": "gts lint",
     "clean": "gts clean",

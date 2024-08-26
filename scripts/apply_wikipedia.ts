@@ -14,8 +14,9 @@ import {
   cachedWomen,
   writeCache,
   getLinksLanguages,
-  cachedUnknown,
+  cachedStreets,
   getEntityLinks,
+  cacheStreet,
 } from './commons';
 import {type Language} from './languages';
 import {createWriteStream, readFileSync} from 'fs';
@@ -142,13 +143,16 @@ async function classifyWikidataEntry(
     .alias('h', 'help')
     .alias('c', 'city')
     .alias('lang', 'language')
-    .alias('ku', 'keepUnknown')
+    .alias('q', 'quick')
     .describe('c', 'City in your data folder')
-    .describe('ku', 'To keep unclassified streets')
     .describe('lang', 'main language of the streets names')
+    .describe('q', 'CHeck street cache before checking for wikidata ids')
+    .boolean('q')
+    .default('q', true)
     .demandOption(['c', 'lang']).argv;
 
   const langs = getLinksLanguages(args.lang as Language);
+  const quick = args.q;
 
   const listFn = path.join(__dirname, `../data/${args['city']}/list.csv`);
   const foundFn = path.join(__dirname, `../data/${args['city']}/list_wiki.csv`);
@@ -167,18 +171,29 @@ async function classifyWikidataEntry(
     [string, string],
     {
       identified: boolean;
+      /** streetName, gender, wikiJSON */
       record: [string, string, string];
+      wikidataId?: string;
     }
   >(async record => {
     const name = record[1];
 
-    let [id, gender, cached] = await classifyName(name);
+    let id: string | undefined;
+    let gender: Gender;
+    let cached = false;
 
-    if (gender === Gender.Unknown) {
-      const cachedUnknownEntry = cachedUnknown.get(name);
-      if (cachedUnknownEntry) {
-        id = cachedUnknownEntry.wikidataId;
-        gender = cachedUnknownEntry.gender;
+    const cachedStreet = cachedStreets.get(record[0]);
+
+    if (quick && cachedStreet) {
+      id = cachedStreet.wikidataId;
+      gender = cachedStreet.gender;
+      cached = true;
+    } else {
+      [id, gender, cached] = await classifyName(name);
+
+      if (gender === Gender.Unknown && cachedStreet) {
+        id = cachedStreet.wikidataId;
+        gender = cachedStreet.gender;
         cached = true;
       }
     }
@@ -191,13 +206,18 @@ async function classifyWikidataEntry(
       if (id) {
         if (gender === Gender.Man) {
           cachePerson(id, gender);
-          return {identified: true, record: [record[0], gender, '']};
+          return {
+            identified: true,
+            record: [record[0], gender, ''],
+            wikidataId: id,
+          };
         } else {
           const links = await getEntityLinks(id, langs);
           cachePerson(id, gender, links);
           return {
             identified: true,
             record: [record[0], gender, JSON.stringify(links)],
+            wikidataId: id,
           };
         }
       } else return {identified: true, record: [record[0], gender, '']};
@@ -245,9 +265,10 @@ async function classifyWikidataEntry(
     .on('data', data => {
       if (data.identified) {
         foundStringifier.write(data.record);
+        cacheStreet(data.record[0], data.record[1] as Gender, data.wikidataId);
 
         foundCounter++;
-        if (foundCounter % 50 === 0) writeCache();
+        if (foundCounter % 5 === 0) writeCache();
       } else unsureStringifier.write(data.record);
       progressBar.tick({cacheHits: cacheHitsCounter});
     })

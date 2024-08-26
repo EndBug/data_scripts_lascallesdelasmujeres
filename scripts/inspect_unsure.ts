@@ -12,7 +12,7 @@ import ProgressBar from 'progress';
 import {
   Gender,
   cachePerson,
-  cacheUnknown,
+  cacheStreet,
   getEntityLinks,
   getLinksLanguages,
   isGender,
@@ -279,7 +279,7 @@ async function ChatGPTAPIReevaluation(
 
     if (gender === Gender.Unknown) {
       // Mark this entry as a confirmed non-person entry
-      cacheUnknown(streetName, gender);
+      cacheStreet(streetName, gender);
     } else if (gender !== null) {
       // Copy the street name to the clipboard
       clipboard.writeSync(streetName);
@@ -300,7 +300,7 @@ async function ChatGPTAPIReevaluation(
         .trim()
         .toUpperCase();
 
-      cacheUnknown(streetName, gender, wikidataId || undefined);
+      cacheStreet(streetName, gender, wikidataId || undefined);
 
       if (wikidataId) {
         if (gender === Gender.Man) {
