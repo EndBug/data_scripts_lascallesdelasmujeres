@@ -6,7 +6,7 @@
   "typings": "./types/**/*.d.ts",
   "type": "module",
   "scripts": {
-    "street-list": "bun run scripts/street-list.ts",
+    "street-list": "bun run scripts/street_list.ts",
     "wikipedia-step": "bun run ./scripts/apply_wikipedia.ts",
     "inspect-unsure": "bun run ./scripts/inspect_unsure.ts",
     "final-step": "node ./scripts/parse_final.js",
