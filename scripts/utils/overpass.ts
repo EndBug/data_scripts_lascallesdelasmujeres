@@ -15,8 +15,7 @@ import type {
   BBox,
 } from 'geojson';
 import * as bboxSplit from 'boundingbox-split';
-
-import {writeFeatures} from './commons';
+import {writeFeatures} from './geoJSON';
 
 /**
  * Gets the boundary of a city from OpenStreetMap

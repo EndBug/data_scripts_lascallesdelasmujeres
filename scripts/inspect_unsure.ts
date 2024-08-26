@@ -7,18 +7,16 @@ import {get_encoding} from '@dqbd/tiktoken';
 import {confirm, input, password, rawlist, select} from '@inquirer/prompts';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
-import {Language} from './languages';
+import {Language} from './utils/languages';
 import ProgressBar from 'progress';
+import clipboard from 'clipboardy';
 import {
   Gender,
-  cachePerson,
-  cacheStreet,
   getEntityLinks,
   getLinksLanguages,
   isGender,
-  writeCache,
-} from './commons';
-import clipboard from 'clipboardy';
+} from './utils/wiki';
+import {cachePerson, cacheStreet, writeCache} from './utils/cache';
 
 const TOKEN_LIMIT = 4000;
 

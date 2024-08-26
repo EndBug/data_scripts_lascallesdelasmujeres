@@ -7,21 +7,19 @@ import {hideBin} from 'yargs/helpers';
 import wikidataLookup from 'wikidata-entity-lookup';
 import {WikibaseEntityReader} from 'wikidata-entity-reader';
 import axios from 'axios';
+import {type Language} from './utils/languages';
+import {createWriteStream, readFileSync} from 'fs';
+import {AsyncTransform} from './utils/stream';
+import ProgressBar from 'progress';
+import {Gender, getEntityLinks, getLinksLanguages} from './utils/wiki';
 import {
-  Gender,
   cachePerson,
+  cacheStreet,
   cachedMen,
+  cachedStreets,
   cachedWomen,
   writeCache,
-  getLinksLanguages,
-  cachedStreets,
-  getEntityLinks,
-  cacheStreet,
-} from './commons';
-import {type Language} from './languages';
-import {createWriteStream, readFileSync} from 'fs';
-import {AsyncTransform} from './utils';
-import ProgressBar from 'progress';
+} from './utils/cache';
 
 /**
  * An object where the key is the recognized gender, and the value is an array

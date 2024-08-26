@@ -16,7 +16,7 @@ const filters = require('./filters').filters;
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as csv from 'csv';
-import {processCity} from './get-streets';
+import {processCity} from './utils/overpass';
 
 function printArgs() {
   for (let j = 0; j < args.length; j++) {
