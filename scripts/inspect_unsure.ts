@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import * as csvSync from 'csv/sync';
 import * as csv from 'csv';
-import {createWriteStream, readFileSync, writeFileSync} from 'fs';
+import {createWriteStream, existsSync, readFileSync, writeFileSync} from 'fs';
 import {join} from 'path';
 import {get_encoding} from '@dqbd/tiktoken';
 import {confirm, input, password, rawlist, select} from '@inquirer/prompts';
@@ -16,8 +16,15 @@ import {
   getLinksLanguages,
   isGender,
 } from './utils/wiki';
-import {cachePerson, cacheStreet, writeCache} from './utils/cache';
+import {
+  cachePerson,
+  cacheStreet,
+  cachedStreets,
+  cachedWomen,
+  writeCache,
+} from './utils/cache';
 
+/** @see https://platform.openai.com/docs/models/gpt-4o */
 const TOKEN_LIMIT = 4000;
 
 const encoding = get_encoding('cl100k_base');
@@ -28,13 +35,13 @@ function countTokens(text: string) {
 
   return encoding.encode(text).length;
 }
-function splitListByTokens(words: string[]) {
+function splitListByTokens(words: string[], prompt: string) {
   const chunks: string[] = [];
   let currentChunk: string[] = [];
 
   for (const word of words) {
     // Temporarily add the word to the current chunk and encode
-    const tempChunk = [...currentChunk, word];
+    const tempChunk = [prompt, ...currentChunk, word];
     const tokenCount = countTokens(tempChunk.join(';'));
 
     if (tokenCount > TOKEN_LIMIT) {
@@ -81,10 +88,14 @@ enum ReEvaluationMode {
 
 const modes: Record<
   ReEvaluationMode,
-  (lang: Language, inputRecords: string[][]) => Promise<[string, Gender][]>
+  (
+    lang: Language,
+    inputRecords: string[][],
+    cityFolder: string
+  ) => Promise<[string, Gender][]>
 > = {
   [ReEvaluationMode.CHATGPT_API]: ChatGPTAPIReevaluation,
-  [ReEvaluationMode.CHATGPT_FREE]: async () => [],
+  [ReEvaluationMode.CHATGPT_FREE]: ChatGPTFreeReevaluation,
   [ReEvaluationMode.MANUAL]: async () => [],
 };
 
@@ -98,12 +109,13 @@ async function ChatGPTAPIReevaluation(
     return [];
   }
 
-  const messages = splitListByTokens(inputRecords.map(r => r[0])).map(
-    chunk => ({
-      role: 'user' as const,
-      content: chunk,
-    })
-  );
+  const messages = splitListByTokens(
+    inputRecords.map(r => r[0]),
+    prompt
+  ).map(chunk => ({
+    role: 'user' as const,
+    content: chunk,
+  }));
   const totalTokenCount =
     messages
       .map(m => countTokens(m.content as string))
@@ -175,6 +187,138 @@ async function ChatGPTAPIReevaluation(
   return filteredOutputRecords;
 }
 
+async function ChatGPTFreeReevaluation(
+  lang: Language,
+  inputRecords: string[][],
+  cityFolder: string
+) {
+  const prompt = prompts[lang];
+  if (!prompt) {
+    console.error(`No prompt available for ${lang}`);
+    return [];
+  }
+
+  const messages = splitListByTokens(
+    inputRecords.map(r => r[0]),
+    prompt
+  ).map(chunk => ({
+    role: 'user' as const,
+    content: chunk,
+  }));
+
+  console.log(
+    `You will have to send ${messages.length} messages. 
+    Each message will be copied to your clipboard. 
+    You will then be asked to copy the CSV list to a file: edit it as needed if there are formatting issues.`
+      .split('\n')
+      .map(line => line.trim())
+      .join('\n')
+  );
+
+  const confirmed = await confirm({message: 'Do you want to proceed?'});
+  if (!confirmed) {
+    console.log('Aborting...');
+    return [];
+  }
+
+  const tempFileFn = join(cityFolder, 'REEVALUATION_INPUT.csv');
+  writeFileSync(tempFileFn, '');
+  console.log(
+    `I've created a file at ${tempFileFn} for you to copy the list to.`
+  );
+
+  const outputRecords: [string, string][] = [];
+  const progressBar = new ProgressBar(
+    'Progress: [:bar] :current/:total :percent',
+    messages.length
+  );
+  progressBar.tick(0);
+
+  // Query OpenAI's API
+  for (const message of messages) {
+    console.log('\nCopying message...');
+
+    clipboard.writeSync(prompt + '\n' + message.content);
+
+    let done = false;
+    while (!done) {
+      done = await rawlist({
+        choices: [
+          {value: true, name: 'Next'},
+          {value: false, name: 'Re-copy message'},
+        ],
+        message:
+          'Message copied! Please paste this in your GPT, then copy the response in the input file.',
+      });
+
+      if (done) {
+        try {
+          const parsed = csvSync.parse(
+            readFileSync(tempFileFn, {encoding: 'utf8'})
+              .trim()
+              .split('\n')
+              .map(l => l.trim())
+              .join('\n'),
+            {delimiter: ';', from_line: 1}
+          );
+          if (parsed[0].length !== 2) {
+            console.log('CSV issue: The records needs to have two columns');
+            done = false;
+          }
+          if (parsed.some((r: [string, string]) => !isGender(r[1]))) {
+            console.log(
+              'CSV issue: The second column needs to be a gender identifier'
+            );
+            done = false;
+          }
+        } catch (error) {
+          if (error instanceof Error) console.log(error.message);
+          done = false;
+        }
+      }
+    }
+
+    // Read records
+    const response: [string, string][] = (
+      csvSync.parse(
+        readFileSync(tempFileFn, {encoding: 'utf8'})
+          .trim()
+          .split('\n')
+          .map(l => l.trim())
+          .join('\n'),
+        {delimiter: ';', from_line: 1}
+      ) as string[][]
+    )
+      .map(record => record.slice(0, 2) as [string, string])
+      .filter(
+        // Remove duplicates
+        (record, index, self) =>
+          self.findIndex(r => r[0] === record[0]) === index
+      );
+
+    // Push the parsed records to the output
+    outputRecords.push(...response);
+
+    progressBar.tick();
+
+    // Clear the input file
+    writeFileSync(tempFileFn, '');
+  }
+
+  const filteredOutputRecords: [string, Gender][] = (
+    outputRecords
+      // Filter only the ones that have a valid gender tag
+      .filter(record => isGender(record[1])) as [string, Gender][]
+  )
+    // Filter only the ones that actually were in the original list
+    .filter(record => inputRecords.some(r => r[0] === record[0]));
+  console.log(
+    `${filteredOutputRecords.length} records need confirmation. There were ${outputRecords.length - filteredOutputRecords.length} invalid records.`
+  );
+
+  return filteredOutputRecords;
+}
+
 (async () => {
   const args = await yargs(hideBin(process.argv))
     .usage(
@@ -215,12 +359,60 @@ async function ChatGPTAPIReevaluation(
   // .slice(0, 1000)
   // .join('\n');
 
-  const inputRecords: string[][] = csvSync.parse(inputFile, {
+  const resultFn = join(cityFolder, 'list_unsure_confirmed.csv');
+  const resumePartial =
+    existsSync(resultFn) &&
+    (await confirm({
+      message:
+        'A "confirmed" list already exists. Do you want to resume from it?',
+      default: true,
+    }));
+
+  /** streetName, gender, wikiJSON */
+  const partialConfirmedRecords: string[][] = resumePartial
+    ? csvSync.parse(readFileSync(resultFn, {encoding: 'utf8'}), {
+        delimiter: ';',
+        from_line: 2,
+      })
+    : [];
+
+  /** streetName, cleanName */
+  const rawInputRecords = csvSync.parse(inputFile, {
     delimiter: ';',
     from_line: 2,
+  }) as string[][];
+
+  // Add records that are already cached to the partially confirmed records.
+  // This may happen when a confirmation was resumed, and the unsure list still contains
+  // the previous entries.
+  rawInputRecords.forEach(r => {
+    const streetCacheEntry = cachedStreets.get(r[0]);
+    if (streetCacheEntry) {
+      if (streetCacheEntry.gender === Gender.Woman) {
+        const links =
+          streetCacheEntry.wikidataId &&
+          cachedWomen.get(streetCacheEntry.wikidataId);
+
+        partialConfirmedRecords.push([
+          r[0],
+          streetCacheEntry.gender,
+          links ? JSON.stringify(links) : '',
+        ]);
+      } else {
+        partialConfirmedRecords.push([r[0], streetCacheEntry.gender, '']);
+      }
+    }
   });
 
-  const reEvaluatedRecords = await modes[Mode](lang, inputRecords);
+  // Filter out the already confirmed records
+  const inputRecords = (
+    csvSync.parse(inputFile, {
+      delimiter: ';',
+      from_line: 2,
+    }) as string[][]
+  ).filter(r => !partialConfirmedRecords.some(pr => pr[0] === r[0]));
+
+  const reEvaluatedRecords = await modes[Mode](lang, inputRecords, cityFolder);
   if (reEvaluatedRecords.length === 0) {
     console.log('No records found, exiting.');
     return;
@@ -246,23 +438,26 @@ async function ChatGPTAPIReevaluation(
     throw err;
   });
 
-  const resultFn = join(cityFolder, 'list_unsure_confirmed.csv');
   const resultFileStream = createWriteStream(resultFn, 'utf-8');
   resultStringifier.pipe(resultFileStream);
 
+  // Needed in case GPT produces duplicates base on partial matching of street names
+  const reFilteredRecords = reEvaluatedRecords.filter(
+    record => !partialConfirmedRecords.some(r => r[0] === record[0])
+  );
+
   const progressBar = new ProgressBar(
     'Progress: [:bar] :current/:total :percent',
-    reEvaluatedRecords.length
+    reFilteredRecords.length
   );
   progressBar.tick(0);
 
-  for (const [streetName, proposedGender] of reEvaluatedRecords) {
-    console.log(
-      `
-    Street name: ${streetName}
-    Possible gender: ${proposedGender}
-    `.trim()
-    );
+  // Write already confirmed records
+  partialConfirmedRecords.forEach(r => resultStringifier.write(r));
+
+  for (const [streetName, proposedGender] of reFilteredRecords) {
+    console.log(`\nStreet name:\n${streetName}`);
+    console.log(`Possible gender: ${proposedGender}`);
 
     const gender = await select({
       choices: [
@@ -279,9 +474,6 @@ async function ChatGPTAPIReevaluation(
       // Mark this entry as a confirmed non-person entry
       cacheStreet(streetName, gender);
     } else if (gender !== null) {
-      // Copy the street name to the clipboard
-      clipboard.writeSync(streetName);
-
       const linksLangs = getLinksLanguages(lang);
 
       const wikidataId = (
@@ -290,7 +482,7 @@ async function ChatGPTAPIReevaluation(
             'What is the Wikidata ID for this person? (leave blank if unknown)',
           validate: str =>
             !str ||
-            str.startsWith('Q') ||
+            str.toUpperCase().startsWith('Q') ||
             'This is not a Wikidata ID: Wikidata IDs are the identifiers that start with a Q, you can find them in the page URL',
           transformer: str => str.trim().toUpperCase(),
         })

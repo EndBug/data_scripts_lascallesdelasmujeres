@@ -10256,5 +10256,741 @@
   },
   "Via Giorgio Savoia": {
     "gender": "M"
+  },
+  "Largo Paolo Valera": {
+    "gender": "M",
+    "wikidataId": "Q3894555"
+  },
+  "Largo Carlo Alberto dalla Chiesa": {
+    "gender": "M",
+    "wikidataId": "Q723595"
+  },
+  "Passeggiata Gianni Sassi": {
+    "gender": "M",
+    "wikidataId": "Q3763633"
+  },
+  "Largo Victor de Sabata": {
+    "gender": "M",
+    "wikidataId": "Q464890"
+  },
+  "Largo Lino Montagna": {
+    "gender": "M",
+    "wikidataId": "Q106435005"
+  },
+  "Passeggiata Boris Pasternak": {
+    "gender": "M",
+    "wikidataId": "Q4346663"
+  },
+  "Largo Paolo Grassi": {
+    "gender": "M",
+    "wikidataId": "Q124708018"
+  },
+  "Largo Augusto": {
+    "gender": "M",
+    "wikidataId": "Q17385600"
+  },
+  "Largo Carlo Emilio Gadda": {
+    "gender": "M",
+    "wikidataId": "Q378645"
+  },
+  "Largo Claudio Treves": {
+    "gender": "M",
+    "wikidataId": "Q3680249"
+  },
+  "Largo Aldo De Benedetti": {
+    "gender": "M",
+    "wikidataId": "Q2405522"
+  },
+  "Largo Oreste Murani": {
+    "gender": "M",
+    "wikidataId": "Q46012549"
+  },
+  "Largo Luigi Medici": {
+    "gender": "M",
+    "wikidataId": "Q63931026"
+  },
+  "Largo Rapallo": {
+    "gender": "M",
+    "wikidataId": "Q1253754"
+  },
+  "Largo Vincenzo Gemito": {
+    "gender": "M",
+    "wikidataId": "Q1228666"
+  },
+  "Largo Paolo D'Ancona": {
+    "gender": "M",
+    "wikidataId": "Q17453085"
+  },
+  "Largo Gianni Rodari": {
+    "gender": "M",
+    "wikidataId": "Q193018"
+  },
+  "Largo Bortolo Belotti": {
+    "gender": "M",
+    "wikidataId": "Q1089658"
+  },
+  "Largo Claudio Abbado": {
+    "gender": "M",
+    "wikidataId": "Q151608"
+  },
+  "Largo Nicola Abbagnano": {
+    "gender": "M",
+    "wikidataId": "Q315251"
+  },
+  "Largo Mattei": {
+    "gender": "M",
+    "wikidataId": "Q3767180"
+  },
+  "Largo Antonio Greppi": {
+    "gender": "M",
+    "wikidataId": "Q16268437"
+  },
+  "Largo Vittorio Sereni": {
+    "gender": "M",
+    "wikidataId": "Q1227375"
+  },
+  "Largo Guido Donegani": {
+    "gender": "M",
+    "wikidataId": "Q3779270"
+  },
+  "Largo Raffaele Mattioli": {
+    "gender": "M",
+    "wikidataId": "Q21045177"
+  },
+  "Largo Enrico Mattei": {
+    "gender": "M",
+    "wikidataId": "Q557795"
+  },
+  "Largo Jorge Luis Borges": {
+    "gender": "M",
+    "wikidataId": "Q909"
+  },
+  "Largo Enrico Bigatti": {
+    "gender": "M",
+    "wikidataId": "Q3725628"
+  },
+  "Largo Antonio Balestra": {
+    "gender": "M",
+    "wikidataId": "Q386500"
+  },
+  "Largo Giambellino": {
+    "gender": "M",
+    "wikidataId": "Q17169"
+  },
+  "Largo Fatima": {
+    "gender": "F",
+    "wikidataId": "Q180123"
+  },
+  "Largo Radaelli": {
+    "gender": "M",
+    "wikidataId": "Q102289929"
+  },
+  "Largo Tazio Nuvolari": {
+    "gender": "M",
+    "wikidataId": "Q174277"
+  },
+  "Largo Giovanni Muzio": {
+    "gender": "M",
+    "wikidataId": "Q962808"
+  },
+  "Largo Albe Steiner": {
+    "gender": "M",
+    "wikidataId": "Q3607930"
+  },
+  "Largo Isarco": {
+    "gender": "M",
+    "wikidataId": "Q3802392"
+  },
+  "Largo Anselmo Guerrieri Gonzaga": {
+    "gender": "M",
+    "wikidataId": "Q3618335"
+  },
+  "Largo Tommaso Gallarati Scotti": {
+    "gender": "M",
+    "wikidataId": "Q64744893"
+  },
+  "Largo Camillo Caccia Dominioni": {
+    "gender": "M",
+    "wikidataId": "Q934326"
+  },
+  "Via Console Marcello": {
+    "gender": "M",
+    "wikidataId": "Q502900"
+  },
+  "Via Fratelli Rizzardi": {
+    "gender": "M"
+  },
+  "Via Fratelli Gorlini": {
+    "gender": "M"
+  },
+  "Via Fratelli Beolchi": {
+    "gender": "M"
+  },
+  "Via Ippodromo": {
+    "gender": "X"
+  },
+  "Via Filippo Anghileri": {
+    "gender": "M"
+  },
+  "Via Fratelli Zanzottera": {
+    "gender": "M"
+  },
+  "Via Gaetano Airaghi": {
+    "gender": "M"
+  },
+  "Via Bonaventura Broggini": {
+    "gender": "M"
+  },
+  "Via Cardinale Pietro Maffi": {
+    "gender": "M",
+    "wikidataId": "Q1124206"
+  },
+  "Via Guglielmo Silva": {
+    "gender": "M"
+  },
+  "Via Vico Magistretti": {
+    "gender": "M",
+    "wikidataId": "Q1362985"
+  },
+  "Via Demetrio Cretese": {
+    "gender": "M",
+    "wikidataId": "Q60234869"
+  },
+  "Via Antonio Mambretti": {
+    "gender": "M"
+  },
+  "Via Fratelli Camillo e Giannino Antona Traversi": {
+    "gender": "M"
+  },
+  "Via Piero Montagnani Marelli": {
+    "gender": "M",
+    "wikidataId": "Q29788985"
+  },
+  "Via Edoardo Chinotto": {
+    "gender": "M",
+    "wikidataId": "Q21207565"
+  },
+  "Via Lucilio Gaio": {
+    "gender": "M",
+    "wikidataId": "Q298729"
+  },
+  "Via Carlo Reale": {
+    "gender": "M"
+  },
+  "Via Manlio e Gioacchino Savaré": {
+    "gender": "M"
+  },
+  "Via Giuseppe Francesco Piermarini": {
+    "gender": "M"
+  },
+  "Via Giuseppe e Francesco Carlo Maggiolini": {
+    "gender": "M"
+  },
+  "Via Zecca Vecchia": {
+    "gender": "X"
+  },
+  "Piazza Pio Undicesimo": {
+    "gender": "M",
+    "wikidataId": "Q42323"
+  },
+  "Via Marchesi de' Taddei": {
+    "gender": "M"
+  },
+  "Piazza Madonna della Provvidenza": {
+    "gender": "F",
+    "wikidataId": "Q345"
+  },
+  "Piazzale Fratelli Zavattari": {
+    "gender": "M"
+  },
+  "Via Giuseppe Organdino": {
+    "gender": "M"
+  },
+  "Via Privata Madre Carolina Orsenigo": {
+    "gender": "F"
+  },
+  "Via Milly Carla Mignone": {
+    "gender": "F",
+    "wikidataId": "Q3858025"
+  },
+  "Via San Siro": {
+    "gender": "X"
+  },
+  "Via privata Fratelli Lorenzetti": {
+    "gender": "M"
+  },
+  "Via Fratelli Bozzi": {
+    "gender": "M"
+  },
+  "Via Fratelli Morelli": {
+    "gender": "M"
+  },
+  "via Madre Virginia Besozzi": {
+    "gender": "F"
+  },
+  "Via Eligio Brigatti": {
+    "gender": "M"
+  },
+  "Via Cesare Faccioli": {
+    "gender": "M"
+  },
+  "Via Fratelli Beltrami": {
+    "gender": "M"
+  },
+  "Via Sofocle": {
+    "gender": "M",
+    "wikidataId": "Q7235"
+  },
+  "Via privata Pietro Colla": {
+    "gender": "M"
+  },
+  "Via privata Alessandro Scanini": {
+    "gender": "M"
+  },
+  "Via San Fermo": {
+    "gender": "M",
+    "wikidataId": "Q3742833"
+  },
+  "Via Marta Navarra Bernstein": {
+    "gender": "F",
+    "wikidataId": "Q94440644"
+  },
+  "Passerella De Gasperi": {
+    "gender": "M",
+    "wikidataId": "Q153832"
+  },
+  "Passaggio Suor Rosa Sozzi": {
+    "gender": "F"
+  },
+  "Passerella Alcide De Gasperi": {
+    "gender": "M",
+    "wikidataId": "Q153832"
+  },
+  "Via Giovanni Cristiano Andersen": {
+    "gender": "M",
+    "wikidataId": "Q5673"
+  },
+  "Via Pietro Rubens": {
+    "gender": "M",
+    "wikidataId": "Q5599"
+  },
+  "Via Monte Santo": {
+    "gender": "X"
+  },
+  "Via F.R. Lamennais": {
+    "gender": "M",
+    "wikidataId": "Q334973"
+  },
+  "Via Monte Cervino": {
+    "gender": "X"
+  },
+  "Via dei Piccolomini": {
+    "gender": "X"
+  },
+  "Sopraelevata Renato Serra": {
+    "gender": "M",
+    "wikidataId": "Q3932800"
+  },
+  "Via Don Gervasini": {
+    "gender": "M",
+    "wikidataId": "Q3770659"
+  },
+  "Largo Boccioni": {
+    "gender": "M",
+    "wikidataId": "Q103971714"
+  },
+  "Largo Monsignor Giuseppe Bicchierai": {
+    "gender": "M",
+    "wikidataId": "Q97482437"
+  },
+  "Via Gerolamo Saporiti": {
+    "gender": "M"
+  },
+  "Via Fratelli Induno": {
+    "gender": "M"
+  },
+  "Via Aristide De Togni": {
+    "gender": "M"
+  },
+  "Via Losanna": {
+    "gender": "X"
+  },
+  "Via Paolo da Cannobio": {
+    "gender": "M"
+  },
+  "Largo Quinto Alpini": {
+    "gender": "X"
+  },
+  "Via Morozzo della Rocca": {
+    "gender": "X"
+  },
+  "Via Cesena": {
+    "gender": "X"
+  },
+  "Via Fratelli Salvioni": {
+    "gender": "M"
+  },
+  "Via Perrone di San Martino": {
+    "gender": "M",
+    "wikidataId": "Q1069841"
+  },
+  "Via San Rafael delle Ande": {
+    "gender": "X"
+  },
+  "Via San Protaso": {
+    "gender": "M"
+  },
+  "Via San Prospero": {
+    "gender": "M"
+  },
+  "Via Santa Monica": {
+    "gender": "F",
+    "wikidataId": "Q234689"
+  },
+  "Via Santa Cecilia": {
+    "gender": "F",
+    "wikidataId": "Q80513"
+  },
+  "Via Sant'Agnese": {
+    "gender": "F",
+    "wikidataId": "Q210096"
+  },
+  "Via Don Carlo Porro": {
+    "gender": "M"
+  },
+  "Via Giovanni Dolcebuono": {
+    "gender": "M",
+    "wikidataId": "Q737808"
+  },
+  "Via Giuseppe Bertolaia": {
+    "gender": "M"
+  },
+  "Via Giuseppe Taccioli": {
+    "gender": "M"
+  },
+  "Via Luigi dalla Piccola": {
+    "gender": "M",
+    "wikidataId": "Q17575"
+  },
+  "Via Luigi Cislaghi": {
+    "gender": "M"
+  },
+  "Via Madre Anna Eugenia Picco": {
+    "gender": "F",
+    "wikidataId": "Q2677826"
+  },
+  "Via Paolo Gerolamo Biumi": {
+    "gender": "M",
+    "wikidataId": "Q93477320"
+  },
+  "Via Paolo Santagostino": {
+    "gender": "M"
+  },
+  "Via Riccardo Arno'": {
+    "gender": "M",
+    "wikidataId": "Q17279818"
+  },
+  "Via Santa Maria Rossa": {
+    "gender": "F",
+    "wikidataId": "Q345"
+  },
+  "Via Santa Marcellina": {
+    "gender": "F",
+    "wikidataId": "Q299955"
+  },
+  "Via San Nereo": {
+    "gender": "M",
+    "wikidataId": "Q721711"
+  },
+  "Via San Tomaso": {
+    "gender": "M"
+  },
+  "Via San Marco": {
+    "gender": "M",
+    "wikidataId": "Q31966"
+  },
+  "Via San Dalmazio": {
+    "gender": "M",
+    "wikidataId": "Q3701187"
+  },
+  "Via Padre Giovanni Battista Martini": {
+    "gender": "M",
+    "wikidataId": "Q283651"
+  },
+  "Via Padre Giovanni Semeria": {
+    "gender": "M",
+    "wikidataId": "Q3768125"
+  },
+  "Via Don Giuseppe del Corno": {
+    "gender": "M"
+  },
+  "Via San Benigno": {
+    "gender": "M",
+    "wikidataId": "Q652797"
+  },
+  "Via San Bernardino": {
+    "gender": "M",
+    "wikidataId": "Q316295"
+  },
+  "Via Sant'Erlembaldo": {
+    "gender": "M",
+    "wikidataId": "Q3731862"
+  },
+  "Via Ettore Bellani": {
+    "gender": "M"
+  },
+  "Via Giorgio Marazzani": {
+    "gender": "M"
+  },
+  "Via Alessandro Astesani": {
+    "gender": "M"
+  },
+  "Via Andrej Rublioff": {
+    "gender": "M"
+  },
+  "Via Francesco Cavezzali": {
+    "gender": "M"
+  },
+  "Via Clelia del Grillo Borromeo": {
+    "gender": "F",
+    "wikidataId": "Q4940170"
+  },
+  "Via Angelo Michele Grancini": {
+    "gender": "M",
+    "wikidataId": "Q766482"
+  },
+  "Via Benvenuto Garofalo": {
+    "gender": "M",
+    "wikidataId": "Q728512"
+  },
+  "Via Tancredi (Duccio) Galimberti": {
+    "gender": "M",
+    "wikidataId": "Q3514987"
+  },
+  "Largo Fratelli Cervi": {
+    "gender": "M"
+  },
+  "Via Lucio Apulejo": {
+    "gender": "M",
+    "wikidataId": "Q170512"
+  },
+  "Via Gian Battista Passerini": {
+    "gender": "M",
+    "wikidataId": "Q48839832"
+  },
+  "Largo Missionari Comboniani": {
+    "gender": "X"
+  },
+  "Via Martiri Oscuri": {
+    "gender": "X"
+  },
+  "Viale Emilio Zola": {
+    "gender": "M",
+    "wikidataId": "Q504"
+  },
+  "Via fratelli Ruffini": {
+    "gender": "M"
+  },
+  "Largo ai Caduti Milanesi per la Patria": {
+    "gender": "X"
+  },
+  "Via Rodano": {
+    "gender": "X"
+  },
+  "Largo dei Bersaglieri": {
+    "gender": "X"
+  },
+  "Via Croce Rossa": {
+    "gender": "X"
+  },
+  "Via Fratelli Fossati": {
+    "gender": "M"
+  },
+  "Via Santa Tecla": {
+    "gender": "F",
+    "wikidataId": "Q51885"
+  },
+  "Via San Giovanni sul Muro": {
+    "gender": "M",
+    "wikidataId": "Q410977"
+  },
+  "Via Sant'Antonio": {
+    "gender": "M"
+  },
+  "Largo Giovan Battista Scalabrini": {
+    "gender": "M"
+  },
+  "Via San Marchetto": {
+    "gender": "M"
+  },
+  "Via Annibale Cusi": {
+    "gender": "M"
+  },
+  "Via Johann Gutemberg": {
+    "gender": "M",
+    "wikidataId": "Q8958"
+  },
+  "Via San Paolino": {
+    "gender": "M"
+  },
+  "Via San Vigilio": {
+    "gender": "M",
+    "wikidataId": "Q194395"
+  },
+  "Via Don Ernesto Vercesi": {
+    "gender": "M",
+    "wikidataId": "Q24043608"
+  },
+  "Via Alfonsina Strada": {
+    "gender": "F",
+    "wikidataId": "Q550116"
+  },
+  "Largo Don Saturnino Villa": {
+    "gender": "M"
+  },
+  "Piazza San Giovanni Battista alla Creta": {
+    "gender": "M",
+    "wikidataId": "Q40662"
+  },
+  "Via L. il Moro Via Pestalozzi": {
+    "gender": "X"
+  },
+  "Via L. il Moro Cavalcavia Don Milani": {
+    "gender": "X"
+  },
+  "Via L. Il Moro P.le Negrelli": {
+    "gender": "X"
+  },
+  "Piazza San Giorgio": {
+    "gender": "M",
+    "wikidataId": "Q48438"
+  },
+  "Piazza Sant'Eufemia": {
+    "gender": "F",
+    "wikidataId": "Q240610"
+  },
+  "Piazza del Rosario": {
+    "gender": "X"
+  },
+  "Piazza Cardinale Andrea Ferrari": {
+    "gender": "M",
+    "wikidataId": "Q493594"
+  },
+  "Piazza Angilberto Secondo": {
+    "gender": "M",
+    "wikidataId": "Q4763245"
+  },
+  "Via Arcivescovo Calabiana": {
+    "gender": "M"
+  },
+  "Via Innocenzo Isimbardi": {
+    "gender": "M"
+  },
+  "Via Felice Lope de Vega": {
+    "gender": "M",
+    "wikidataId": "Q165257"
+  },
+  "Via Fratelli Fraschini": {
+    "gender": "M"
+  },
+  "Via Marco Antonio Bragadino": {
+    "gender": "M"
+  },
+  "Via Santa Teresa": {
+    "gender": "F",
+    "wikidataId": "Q174880"
+  },
+  "Via Clemente Prudenzio": {
+    "gender": "M",
+    "wikidataId": "Q347250"
+  },
+  "Via Giacomo Pinaroli": {
+    "gender": "M"
+  },
+  "Piazza Imperatore Tito": {
+    "gender": "M",
+    "wikidataId": "Q1421"
+  },
+  "Via Fedro": {
+    "gender": "M",
+    "wikidataId": "Q52166"
+  },
+  "Via Geremia Meleri": {
+    "gender": "M"
+  },
+  "Via Cesare Isotta": {
+    "gender": "M"
+  },
+  "Via San Giacomo": {
+    "gender": "M",
+    "wikidataId": "Q43999"
+  },
+  "Via Sant'Abbondio": {
+    "gender": "M",
+    "wikidataId": "Q3948616"
+  },
+  "Via Amedei": {
+    "gender": "X"
+  },
+  "Via Piero Preda": {
+    "gender": "M"
+  },
+  "Via San Domenico Savio": {
+    "gender": "M",
+    "wikidataId": "Q318502"
+  },
+  "Via Donna Prassede": {
+    "gender": "F",
+    "wikidataId": "Q3713893"
+  },
+  "Via Andrea e Pietro Cascella": {
+    "gender": "M"
+  },
+  "Via Veronese Guarino": {
+    "gender": "M",
+    "wikidataId": "Q539577"
+  },
+  "Via Cristoforo Gandino": {
+    "gender": "M"
+  },
+  "Piazzetta San Josemaria Escrivà": {
+    "gender": "M",
+    "wikidataId": "Q186807"
+  },
+  "Via Emilio Faa' Di Bruno": {
+    "gender": "M",
+    "wikidataId": "Q667465"
+  },
+  "Via Fratelli Campi": {
+    "gender": "M"
+  },
+  "Via San Luca": {
+    "gender": "M",
+    "wikidataId": "Q128538"
+  },
+  "Vicolo San Vincenzo": {
+    "gender": "M",
+    "wikidataId": "Q318974"
+  },
+  "Via Attilio Regolo": {
+    "gender": "M",
+    "wikidataId": "Q318718"
+  },
+  "Via Pietro e Giuseppe Pestagalli": {
+    "gender": "M"
+  },
+  "Via Costanza Arconati": {
+    "gender": "F",
+    "wikidataId": "Q3695633"
+  },
+  "Piazza Don Piero Carnelli": {
+    "gender": "M"
+  },
+  "Via Fedele Sopranzi": {
+    "gender": "M"
+  },
+  "Passerella Elvira Leonardi Bouyeure": {
+    "gender": "F",
+    "wikidataId": "Q3639894"
   }
 }

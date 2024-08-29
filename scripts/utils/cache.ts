@@ -21,9 +21,11 @@ export type CachedStreetEntryValue = {
 import cachedWomenData from '../../cache/women-wikidata.json';
 import cachedMenData from '../../cache/men-wikidata.json';
 import cachedStreetsData from '../../cache/streets.json';
+/** Map<wikidataID, entry> */
 export const cachedWomen: PersonCache<Gender.Woman> = new Map(
     Object.entries(cachedWomenData)
   ),
+  /** Array<wikidataID> */
   cachedMen: PersonCache<Gender.Man> = cachedMenData,
   cachedStreets: StreetCache = new Map(
     Object.entries(cachedStreetsData)
@@ -68,17 +70,17 @@ export function cacheStreet(
 /** Saves caches to disk */
 export function writeCache() {
   fs.writeFileSync(
-    path.join(__dirname, '../cache/women-wikidata.json'),
+    path.join(__dirname, '../../cache/women-wikidata.json'),
     JSON.stringify(Object.fromEntries(cachedWomen.entries()), null, 2),
     'utf-8'
   );
   fs.writeFileSync(
-    path.join(__dirname, '../cache/men-wikidata.json'),
+    path.join(__dirname, '../../cache/men-wikidata.json'),
     JSON.stringify(cachedMen, null, 2),
     'utf-8'
   );
   fs.writeFileSync(
-    path.join(__dirname, '../cache/streets.json'),
+    path.join(__dirname, '../../cache/streets.json'),
     JSON.stringify(Object.fromEntries(cachedStreets.entries()), null, 2),
     'utf-8'
   );
