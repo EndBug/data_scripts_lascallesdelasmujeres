@@ -14,9 +14,16 @@ type GeoJSONProperties = {
 };
 
 type LegacyGeoJSONProperties = {
-  url: string;
-  gender: Gender.Man | Gender.Woman;
+  gender: string;
   scale: '';
+};
+
+const getLegacyGender = (gender: Gender) => {
+  return gender === Gender.Woman
+    ? 'Female'
+    : gender === Gender.Man
+      ? 'Male'
+      : 'unknown';
 };
 
 (async () => {
@@ -148,7 +155,9 @@ type LegacyGeoJSONProperties = {
       ...feature,
       properties: {
         ...feature.properties,
-        url:
+        gender: getLegacyGender(feature.properties.gender),
+        wikipedia_link:
+          feature.properties.links[lang]?.wikipedia ??
           feature.properties.links['en']?.wikipedia ??
           Object.values(feature.properties.links)[0]?.wikipedia,
         scale: '',
