@@ -90,13 +90,13 @@ const modes: Record<
   ReEvaluationMode,
   (
     lang: Language,
-    inputRecords: string[][],
+    inputRecords: [string, string][],
     cityFolder: string
   ) => Promise<[string, Gender][]>
 > = {
   [ReEvaluationMode.CHATGPT_API]: ChatGPTAPIReevaluation,
   [ReEvaluationMode.CHATGPT_FREE]: ChatGPTFreeReevaluation,
-  [ReEvaluationMode.MANUAL]: async () => [],
+  [ReEvaluationMode.MANUAL]: ManualReevaluation,
 };
 
 async function ChatGPTAPIReevaluation(
@@ -319,6 +319,15 @@ async function ChatGPTFreeReevaluation(
   return filteredOutputRecords;
 }
 
+async function ManualReevaluation(
+  lang: Language,
+  inputRecords: [string, string][]
+) {
+  return inputRecords.map(
+    ([streetName]) => [streetName, Gender.Unknown] as [string, Gender]
+  );
+}
+
 (async () => {
   const args = await yargs(hideBin(process.argv))
     .usage(
@@ -369,7 +378,7 @@ async function ChatGPTFreeReevaluation(
     }));
 
   /** streetName, gender, wikiJSON */
-  const partialConfirmedRecords: string[][] = resumePartial
+  const partialConfirmedRecords: [string, string, string][] = resumePartial
     ? csvSync.parse(readFileSync(resultFn, {encoding: 'utf8'}), {
         delimiter: ';',
         from_line: 2,
@@ -380,7 +389,7 @@ async function ChatGPTFreeReevaluation(
   const rawInputRecords = csvSync.parse(inputFile, {
     delimiter: ';',
     from_line: 2,
-  }) as string[][];
+  }) as [string, string][];
 
   // Add records that are already cached to the partially confirmed records.
   // This may happen when a confirmation was resumed, and the unsure list still contains
@@ -409,7 +418,7 @@ async function ChatGPTFreeReevaluation(
     csvSync.parse(inputFile, {
       delimiter: ';',
       from_line: 2,
-    }) as string[][]
+    }) as [string, string][]
   ).filter(r => !partialConfirmedRecords.some(pr => pr[0] === r[0]));
 
   const reEvaluatedRecords = await modes[Mode](lang, inputRecords, cityFolder);
