@@ -10992,5 +10992,193 @@
   "Passerella Elvira Leonardi Bouyeure": {
     "gender": "F",
     "wikidataId": "Q3639894"
+  },
+  "Via Monreale": {
+    "gender": "M",
+    "wikidataId": "Q1394894"
+  },
+  "Via Cogne": {
+    "gender": "M",
+    "wikidataId": "Q57989528"
+  },
+  "Via Patroclo": {
+    "gender": "M",
+    "wikidataId": "Q762982"
+  },
+  "Via privata Capodistria": {
+    "gender": "M",
+    "wikidataId": "Q220430"
+  },
+  "Via Dessiè": {
+    "gender": "M",
+    "wikidataId": "Q1200814"
+  },
+  "Viale Ezio": {
+    "gender": "M",
+    "wikidataId": "Q53467655"
+  },
+  "Via Montefeltro": {
+    "gender": "M",
+    "wikidataId": "Q435501"
+  },
+  "Vicolo Mapelli": {
+    "gender": "M",
+    "wikidataId": "Q54198032"
+  },
+  "Via Albino": {
+    "gender": "M",
+    "wikidataId": "Q4712450"
+  },
+  "Via Terni": {
+    "gender": "M",
+    "wikidataId": "Q335022"
+  },
+  "Via privata Bivona": {
+    "gender": "M",
+    "wikidataId": "Q3619040"
+  },
+  "Piazza San Carlo": {
+    "gender": "M",
+    "wikidataId": "Q216946"
+  },
+  "Piazza San Materno": {
+    "gender": "M",
+    "wikidataId": "Q2270111"
+  },
+  "Via Archimede": {
+    "gender": "M",
+    "wikidataId": "Q8739"
+  },
+  "Via Cerva": {
+    "gender": "M",
+    "wikidataId": "Q5682"
+  },
+  "Via Copernico": {
+    "gender": "M",
+    "wikidataId": "Q619"
+  },
+  "Piazza Appio Claudio": {
+    "gender": "M",
+    "wikidataId": "Q5759145"
+  },
+  "Via Tivoli": {
+    "gender": "M",
+    "wikidataId": "Q1069372"
+  },
+  "Piazza Coriolano": {
+    "gender": "M",
+    "wikidataId": "Q3826252"
+  },
+  "Via privata Angera": {
+    "gender": "F",
+    "wikidataId": "Q75928736"
+  },
+  "Via Lesa": {
+    "gender": "M",
+    "wikidataId": "Q6107"
+  },
+  "Via Curzola": {
+    "gender": "M",
+    "wikidataId": "Q68866940"
+  },
+  "Via Gesù": {
+    "gender": "M",
+    "wikidataId": "Q302"
+  },
+  "Piazza San Babila": {
+    "gender": "M",
+    "wikidataId": "Q797915"
+  },
+  "Viale Berbera": {
+    "gender": "M",
+    "wikidataId": "Q79352960"
+  },
+  "Via Jesi": {
+    "gender": "F",
+    "wikidataId": "Q107979924"
+  },
+  "Via Scutari": {
+    "gender": "F",
+    "wikidataId": "Q21342016"
+  },
+  "Piazza San Gerolamo": {
+    "gender": "M",
+    "wikidataId": "Q44248"
+  },
+  "Via Cusani": {
+    "gender": "M",
+    "wikidataId": "Q106717423"
+  },
+  "Via Privata Druso": {
+    "gender": "M",
+    "wikidataId": "Q156778"
+  },
+  "Piazza Fidia": {
+    "gender": "M",
+    "wikidataId": "Q177302"
+  },
+  "Via Taverna": {
+    "gender": "M",
+    "wikidataId": "Q20986533"
+  },
+  "Viale Rodi": {
+    "gender": "M",
+    "wikidataId": "Q30755"
+  },
+  "Via San Nicolao": {
+    "gender": "M",
+    "wikidataId": "Q44269"
+  },
+  "Via Cappuccio": {
+    "gender": "M",
+    "wikidataId": "Q1087546"
+  },
+  "Via Mercato": {
+    "gender": "M",
+    "wikidataId": "Q6353"
+  },
+  "Via Fulvio Testi": {
+    "gender": "M",
+    "wikidataId": "Q120973899"
+  },
+  "Piazza Gae Aulenti": {
+    "gender": "F",
+    "wikidataId": "Q8867"
+  },
+  "Via Giovanni Suzzani": {
+    "gender": "M",
+    "wikidataId": "Q28944092"
+  },
+  "Via Stromboli": {
+    "gender": "M",
+    "wikidataId": "Q27067917"
+  },
+  "Via Agostino Depretis": {
+    "gender": "M",
+    "wikidataId": "Q356711"
+  },
+  "Via Palmi": {
+    "gender": "M",
+    "wikidataId": "Q9348"
+  },
+  "Vicolo Santa Caterina": {
+    "gender": "F",
+    "wikidataId": "Q229190"
+  },
+  "Via Salasco": {
+    "gender": "M",
+    "wikidataId": "Q2939169"
+  },
+  "Via Adamello": {
+    "gender": "M",
+    "wikidataId": "Q130281908"
+  },
+  "Via Paullo": {
+    "gender": "M",
+    "wikidataId": "Q540753"
+  },
+  "Via Letizia": {
+    "gender": "F",
+    "wikidataId": "Q201589"
   }
 }
