@@ -71,6 +71,8 @@ async function classifyName(
  * @returns An array of Wikidata IDs that match the name query
  */
 async function getWikidataIds(name: string): Promise<string[]> {
+  if (!name) return [];
+
   const results =
     (await wikidataLookup.findPerson(name).catch((err: Error) => {
       console.error('Issue in getting');
