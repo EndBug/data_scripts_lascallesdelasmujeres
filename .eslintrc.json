@@ -2,6 +2,7 @@
   "extends": "./node_modules/gts/",
   "rules": {
     "n/no-unsupported-features/es-builtins": "off",
-    "n/no-unsupported-features/node-builtins": "off"
+    "n/no-unsupported-features/node-builtins": "off",
+    "n/no-process-exit": "off"
   }
 }

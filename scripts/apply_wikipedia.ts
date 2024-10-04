@@ -134,153 +134,176 @@ async function classifyWikidataEntry(
   return {gender: conclusion, cached: false};
 }
 
-(async () => {
-  const args = await yargs(hideBin(process.argv))
-    .usage(
-      'WIKIPEDIA STEP: Pass a city name and the flag --keepUnknown in case you want to keep the unclassified streets. '
-    )
-    .epilog('GeoChicas OSM 2020')
-    .alias('h', 'help')
-    .alias('c', 'city')
-    .alias('lang', 'language')
-    .alias('q', 'quick')
-    .describe('c', 'City in your data folder')
-    .describe('lang', 'main language of the streets names')
-    .describe('q', 'CHeck street cache before checking for wikidata ids')
-    .boolean('q')
-    .default('q', true)
-    .demandOption(['c', 'lang']).argv;
+new Promise<void>((resolve, reject) => {
+  (async () => {
+    const args = await yargs(hideBin(process.argv))
+      .usage(
+        'WIKIPEDIA STEP: Pass a city name and the flag --keepUnknown in case you want to keep the unclassified streets. '
+      )
+      .epilog('GeoChicas OSM 2020')
+      .alias('h', 'help')
+      .alias('c', 'city')
+      .alias('lang', 'language')
+      .alias('q', 'quick')
+      .describe('c', 'City in your data folder')
+      .describe('lang', 'main language of the streets names')
+      .describe('q', 'CHeck street cache before checking for wikidata ids')
+      .boolean('q')
+      .default('q', true)
+      .demandOption(['c', 'lang']).argv;
 
-  const langs = getLinksLanguages(args.lang as Language);
-  const quick = args.q;
+    const langs = getLinksLanguages(args.lang as Language);
+    const quick = args.q;
 
-  const listFn = path.join(__dirname, `../data/${args['city']}/list.csv`);
-  const foundFn = path.join(__dirname, `../data/${args['city']}/list_wiki.csv`);
-  const unsureFn = path.join(
-    __dirname,
-    `../data/${args['city']}/list_unsure.csv`
-  );
+    const listFn = path.join(__dirname, `../data/${args['city']}/list.csv`);
+    const foundFn = path.join(
+      __dirname,
+      `../data/${args['city']}/list_wiki.csv`
+    );
+    const unsureFn = path.join(
+      __dirname,
+      `../data/${args['city']}/list_unsure.csv`
+    );
 
-  const lines = readFileSync(listFn, 'utf-8').split('\n');
-  const parser = csv.parse({delimiter: ';'});
+    const lines = readFileSync(listFn, 'utf-8').trim().split('\n');
+    const parser = csv.parse({delimiter: ';'});
 
-  let foundCounter = 0,
-    cacheHitsCounter = 0;
+    let foundCounter = 0,
+      unsureCounter = 0,
+      cacheHitsCounter = 0;
 
-  const recordProcessor = new AsyncTransform<
-    [string, string],
-    {
-      identified: boolean;
-      /** streetName, gender, wikiJSON */
-      record: [string, string, string];
-      wikidataId?: string;
-    }
-  >(async record => {
-    const name = record[1];
+    const recordProcessor = new AsyncTransform<
+      [string, string],
+      {
+        identified: boolean;
+        /** streetName, gender, wikiJSON */
+        record: [string, string, string];
+        wikidataId?: string;
+      }
+    >(async record => {
+      const name = record[1];
 
-    let id: string | undefined;
-    let gender: Gender;
-    let cached = false;
+      let id: string | undefined;
+      let gender: Gender;
+      let cached = false;
 
-    const cachedStreet = cachedStreets.get(record[0]);
+      const cachedStreet = cachedStreets.get(record[0]);
 
-    if (quick && cachedStreet) {
-      id = cachedStreet.wikidataId;
-      gender = cachedStreet.gender;
-      cached = true;
-    } else {
-      [id, gender, cached] = await classifyName(name);
-
-      if (gender === Gender.Unknown && cachedStreet) {
+      if (quick && cachedStreet) {
         id = cachedStreet.wikidataId;
         gender = cachedStreet.gender;
         cached = true;
-      }
-    }
+      } else {
+        [id, gender, cached] = await classifyName(name);
 
-    if (cached) cacheHitsCounter++;
-
-    if (gender === Gender.Unknown)
-      return {identified: false, record: [...record, '']};
-    else {
-      if (id) {
-        if (gender === Gender.Man) {
-          cachePerson(id, gender);
-          return {
-            identified: true,
-            record: [record[0], gender, ''],
-            wikidataId: id,
-          };
-        } else {
-          const links = await getEntityLinks(id, langs);
-          cachePerson(id, gender, links);
-          return {
-            identified: true,
-            record: [record[0], gender, JSON.stringify(links)],
-            wikidataId: id,
-          };
+        if (gender === Gender.Unknown && cachedStreet) {
+          id = cachedStreet.wikidataId;
+          gender = cachedStreet.gender;
+          cached = true;
         }
-      } else return {identified: true, record: [record[0], gender, '']};
-    }
-  });
+      }
 
-  const foundStringifier = csv.stringify({
-    delimiter: ';',
-    header: true,
-    columns: ['streetName', 'gender', 'wikiJSON'],
-  });
-  const unsureStringifier = csv.stringify({
-    delimiter: ';',
-    header: true,
-    columns: ['streetName', 'cleanName'],
-  });
+      if (cached) cacheHitsCounter++;
 
-  const foundFileStream = createWriteStream(foundFn, 'utf-8');
-  const unsureFileStream = createWriteStream(unsureFn, 'utf-8');
-
-  foundStringifier.on('error', err => {
-    console.error('Error writing found file.');
-    throw err;
-  });
-  unsureStringifier.on('error', err => {
-    console.error('Error writing unsure file.');
-    throw err;
-  });
-
-  const progressBar = new ProgressBar(
-    'Progress: [:bar] :current/:total :percent :etas | Cache hits: :cacheHits',
-    {
-      total: lines.length - 1,
-      complete: '=',
-      incomplete: ' ',
-      width: 50,
-    }
-  );
-
-  foundStringifier.pipe(foundFileStream);
-  unsureStringifier.pipe(unsureFileStream);
-
-  parser
-    .pipe(recordProcessor)
-    .on('data', data => {
-      if (data.identified) {
-        foundStringifier.write(data.record);
-        cacheStreet(data.record[0], data.record[1] as Gender, data.wikidataId);
-
-        foundCounter++;
-        if (foundCounter % 5 === 0) writeCache();
-      } else unsureStringifier.write(data.record);
-      progressBar.tick({cacheHits: cacheHitsCounter});
-    })
-    .on('error', err => {
-      console.error('Error processing records.', err);
-    })
-    .on('end', () => {
-      console.log('List classified.');
-      writeCache();
-      foundStringifier.end();
-      unsureStringifier.end();
+      if (gender === Gender.Unknown)
+        return {identified: false, record: [...record, '']};
+      else {
+        if (id) {
+          if (gender === Gender.Man) {
+            cachePerson(id, gender);
+            return {
+              identified: true,
+              record: [record[0], gender, ''],
+              wikidataId: id,
+            };
+          } else {
+            const links = await getEntityLinks(id, langs);
+            cachePerson(id, gender, links);
+            return {
+              identified: true,
+              record: [record[0], gender, JSON.stringify(links)],
+              wikidataId: id,
+            };
+          }
+        } else return {identified: true, record: [record[0], gender, '']};
+      }
     });
 
-  lines.slice(1).forEach(line => parser.write(line + '\n'));
-})().catch(console.error);
+    const foundStringifier = csv.stringify({
+      delimiter: ';',
+      header: true,
+      columns: ['streetName', 'gender', 'wikiJSON'],
+    });
+    const unsureStringifier = csv.stringify({
+      delimiter: ';',
+      header: true,
+      columns: ['streetName', 'cleanName'],
+    });
+
+    const foundFileStream = createWriteStream(foundFn, 'utf-8');
+    const unsureFileStream = createWriteStream(unsureFn, 'utf-8');
+
+    foundStringifier.on('error', err => {
+      console.error('Error writing found file.');
+      throw err;
+    });
+    unsureStringifier.on('error', err => {
+      console.error('Error writing unsure file.');
+      throw err;
+    });
+
+    const progressBar = new ProgressBar(
+      'Progress: [:bar] :current/:total :percent :etas | Cache hits: :cacheHits',
+      {
+        total: lines.length - 1, // remove header from count
+        complete: '=',
+        incomplete: ' ',
+        width: 50,
+      }
+    );
+
+    foundStringifier.pipe(foundFileStream);
+    unsureStringifier.pipe(unsureFileStream);
+
+    parser
+      .pipe(recordProcessor)
+      .on('data', data => {
+        if (data.identified) {
+          foundStringifier.write(data.record);
+          cacheStreet(
+            data.record[0],
+            data.record[1] as Gender,
+            data.wikidataId
+          );
+
+          foundCounter++;
+          if (foundCounter % 5 === 0) writeCache();
+        } else {
+          unsureCounter++;
+          unsureStringifier.write(data.record);
+        }
+        progressBar.tick({cacheHits: cacheHitsCounter});
+      })
+      .on('error', err => {
+        console.error('Error processing records.', err);
+      })
+      .on('end', () => {
+        progressBar.terminate();
+        console.log('List classified.');
+        console.log(`${foundCounter} records automatically classified.`);
+        console.log(`${unsureCounter} records marked as unsure.`);
+        console.log(`Cache hits: ${cacheHitsCounter}`);
+
+        writeCache();
+        foundStringifier.end();
+        unsureStringifier.end();
+
+        resolve();
+      });
+
+    lines.slice(1).forEach(line => parser.write(line + '\n'));
+    parser.end();
+  })().catch(reject);
+})
+  .then(() => process.exit(0))
+  .catch(() => process.exit(1));

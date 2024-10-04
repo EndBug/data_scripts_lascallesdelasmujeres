@@ -126,15 +126,21 @@ async function prepareListCSV(
   });
 }
 
-(async () => {
-  printArgs();
-  const city = args.city ? args.city : 'city';
-  const relationIdOSM = args.relation ? args.relation : 1;
-  const language = args.language ? args.language : 'es';
+new Promise<void>((resolve, reject) => {
+  (async () => {
+    printArgs();
+    const city = args.city ? args.city : 'city';
+    const relationIdOSM = args.relation ? args.relation : 1;
+    const language = args.language ? args.language : 'es';
 
-  const getStreetsResult = await processCity(city, relationIdOSM, language);
-  if (!getStreetsResult) return;
+    const getStreetsResult = await processCity(city, relationIdOSM, language);
+    if (!getStreetsResult) return;
 
-  console.log('\nGenerating streets list...');
-  await prepareListCSV(city, [language]);
-})();
+    console.log('\nGenerating streets list...');
+    await prepareListCSV(city, [language]);
+
+    resolve();
+  })().catch(reject);
+})
+  .then(() => process.exit(0))
+  .catch(() => process.exit(1));
