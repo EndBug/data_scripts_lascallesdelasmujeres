@@ -72,6 +72,11 @@ async function prepareListCSV(
     });
 
   const geojson = JSON.parse(data);
+
+  console.log(
+    `Number of streets (including duplicates): ${geojson.features.length}`
+  );
+
   for (const feature of geojson.features) {
     if (feature.properties && feature.properties.name) {
       namesSet.add(feature.properties.name);
@@ -79,6 +84,11 @@ async function prepareListCSV(
       numNoName++;
     }
   }
+
+  console.log(
+    `Number of street names (so, without duplicates): ${namesSet.size}`
+  );
+  console.log('Number of streets without name:', numNoName);
 
   const stringifier = csv.stringify({
     delimiter: ';',
@@ -111,7 +121,6 @@ async function prepareListCSV(
       .on('finish', () => {
         fd.close();
         console.log('Finished writing list file.');
-        console.log('Number of streets without name:', numNoName);
         res();
       });
   });
