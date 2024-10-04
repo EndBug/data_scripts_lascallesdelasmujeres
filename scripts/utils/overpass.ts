@@ -135,9 +135,12 @@ async function getStreetsByBBOX(
 ): Promise<Feature[]> {
   const grid = await getGrid(bboxCity);
 
-  let index = 0;
+  console.log(`Number of squares: ${grid.length}`);
+
   const features: Feature[] = [];
-  for (const square of grid) {
+  for (let index = 0; index < grid.length; index++) {
+    const square = grid[index];
+
     console.log(`Sending request number ${index}`);
     const overpassResults = await getOverPassData(
       square,
@@ -146,10 +149,13 @@ async function getStreetsByBBOX(
       language
     );
     console.log(`result ${index}: ${overpassResults.length} features`);
-    index++;
+
     features.push(...overpassResults);
-    console.log('waiting 10s before next request to overpass...');
-    await new Promise(resolve => setTimeout(resolve, 10000));
+
+    if (index < grid.length - 1) {
+      console.log('waiting 10s before next request to overpass...');
+      await new Promise(resolve => setTimeout(resolve, 10000));
+    }
   }
 
   return features;
