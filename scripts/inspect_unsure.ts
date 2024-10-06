@@ -510,6 +510,12 @@ async function ManualReevaluation(
           cachePerson(wikidataId, gender, links);
           resultStringifier.write([streetName, gender, JSON.stringify(links)]);
         }
+      } else {
+        resultStringifier.write([
+          streetName,
+          gender,
+          gender === Gender.Woman ? '{}' : '',
+        ]);
       }
     }
 
