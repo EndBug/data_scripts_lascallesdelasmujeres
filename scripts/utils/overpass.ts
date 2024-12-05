@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs';
 
 import overpass from 'query-overpass';
 import booleanContains from '@turf/boolean-contains';
@@ -168,12 +169,11 @@ export async function processCity(
 ) {
   try {
     const cityBoundaries = flatten(await getBoundary(relationId)).features;
-    const cityFilePath = path.join(
-      process.cwd(),
-      'data',
-      city,
-      city + '_boundary.geojson'
-    );
+    const cityFolder = path.join(process.cwd(), 'data', city);
+    // If it doesn't exist, create the folder
+    if (!fs.existsSync(cityFolder)) fs.mkdirSync(cityFolder, {recursive: true});
+
+    const cityFilePath = path.join(cityFolder, city + '_boundary.geojson');
     writeFeatures(cityFilePath, cityBoundaries);
 
     const cityBBOX = bbox({
