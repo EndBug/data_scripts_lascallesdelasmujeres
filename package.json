@@ -36,7 +36,7 @@
     "progress": "^2.0.3",
     "query-overpass": "^1.5.5",
     "split": "^1.0.0",
-    "typescript": "^5.3.2",
+    "typescript": "^5.6.3",
     "wikidata-entity-lookup": "^2.1.0",
     "wikidata-entity-reader": "^4.1.1",
     "yargs": "^17.7.2"
