@@ -1,6 +1,6 @@
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
-import {Language} from './utils/languages';
+import {isLanguage} from './utils/languages';
 import * as csvSync from 'csv/sync';
 import {readFileSync, writeFileSync} from 'fs';
 import * as path from 'path';
@@ -40,8 +40,12 @@ const getLegacyGender = (gender: Gender) => {
     .demandOption(['c', 'lang']).argv;
 
   const city = args.c as string;
-  const lang = args.lang as Language;
+  const lang = args.lang;
   const cityFolder = path.join(__dirname, '../data', city);
+
+  if (!isLanguage(lang)) {
+    throw new Error(`Language ${lang} not supported`);
+  }
 
   /** streetName, gender, wikiJSON */
   const originalRecords = csvSync.parse(

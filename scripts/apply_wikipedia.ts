@@ -7,7 +7,7 @@ import {hideBin} from 'yargs/helpers';
 import wikidataLookup from 'wikidata-entity-lookup';
 import {WikibaseEntityReader} from 'wikidata-entity-reader';
 import axios from 'axios';
-import {type Language} from './utils/languages';
+import {isLanguage} from './utils/languages';
 import {createWriteStream, readFileSync} from 'fs';
 import {AsyncTransform} from './utils/stream';
 import ProgressBar from 'progress';
@@ -152,7 +152,11 @@ new Promise<void>((resolve, reject) => {
       .default('q', true)
       .demandOption(['c', 'lang']).argv;
 
-    const langs = getLinksLanguages(args.lang as Language);
+    if (!isLanguage(args.lang)) {
+      throw new Error(`Language ${args.lang} not supported`);
+    }
+
+    const langs = getLinksLanguages(args.lang);
     const quick = args.q;
 
     const listFn = path.join(__dirname, `../data/${args['city']}/list.csv`);
@@ -306,4 +310,7 @@ new Promise<void>((resolve, reject) => {
   })().catch(reject);
 })
   .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });

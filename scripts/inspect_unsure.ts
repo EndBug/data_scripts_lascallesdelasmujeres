@@ -7,7 +7,7 @@ import {get_encoding} from '@dqbd/tiktoken';
 import {confirm, input, password, rawlist, select} from '@inquirer/prompts';
 import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers';
-import {Language} from './utils/languages';
+import {isLanguage, Language} from './utils/languages';
 import ProgressBar from 'progress';
 import clipboard from 'clipboardy';
 import {
@@ -344,8 +344,12 @@ async function ManualReevaluation(
     .describe('lang', 'main language of the streets names')
     .demandOption(['c', 'lang']).argv;
 
-  const lang = args.lang as Language,
+  const lang = args.lang,
     city = args.city as string;
+
+  if (!isLanguage(lang)) {
+    throw new Error(`Language ${lang} not supported`);
+  }
 
   const Mode = await rawlist({
     choices: [

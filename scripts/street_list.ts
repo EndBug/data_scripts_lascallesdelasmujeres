@@ -17,6 +17,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as csv from 'csv';
 import {processCity} from './utils/overpass';
+import {isLanguage} from './utils/languages';
 
 function printArgs() {
   for (let j = 0; j < args.length; j++) {
@@ -133,6 +134,10 @@ new Promise<void>((resolve, reject) => {
     const relationIdOSM = args.relation ? args.relation : 1;
     const language = args.language ? args.language : 'es';
 
+    if (!isLanguage(language)) {
+      throw new Error(`Language ${language} not supported`);
+    }
+
     const getStreetsResult = await processCity(city, relationIdOSM, language);
     if (!getStreetsResult) return;
 
@@ -143,4 +148,7 @@ new Promise<void>((resolve, reject) => {
   })().catch(reject);
 })
   .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
