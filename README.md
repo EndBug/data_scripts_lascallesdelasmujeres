@@ -1,143 +1,45 @@
-# SCRIPTS de generación de datos para #LasCallesDeLasMujeres
+# [WIP] Mapping scripts for LasCallesDeLasMujeres
 
-Read this in ENGLISH here: [README.en.md](https://github.com/geochicasosm/data_scripts_lascallesdelasmujeres/blob/master/README.en.md)
+> [!WARNING]
+> This project is still under research and development. Its code and general structure may change at any time.
 
-Visita la web del proyecto: [#LasCallesDeLasMujeres](https://geochicasosm.github.io/lascallesdelasmujeres/) ( Versión beta ) de [GEOCHICAS](https://geochicas.org/)
+## Overview
 
-## Getting Started
+This is a fork of [geochicasosm/data_scripts_lascallesdelasmujeres](https://github.com/geochicasosm/data_scripts_lascallesdelasmujeres), aimed at extending this project to more countries around the globe.
 
-Los datos que se visualizan en el proyecto [#LasCallesDeLasMujeres](https://geochicasosm.github.io/lascallesdelasmujeres/) se generan ejecutando los scripts contenidos en este proyecto. A continuación se detallan las instrucciones para reproducir el proceso y poder generar datos para cualquier ciudad.
+This reasearch is being conducted in collaboration with the [Geoinformatics department](https://www.geoinformatics.polimi.it/) at [Politecnico di Milano](https://polimi.it).
 
-### Instalación y preparación de entorno
+## Steps
 
-Para poder decargar el proyecto y ejecutar los scripts, es necesario tener instalado:
+### 1. `npm run street-list -- --city=CITY --language=LANG --relation=REL`
 
-- GIT (Descargar [AQUí](https://git-scm.com/downloads))
-- Node.js versión >=12 (Descargar [AQUí](https://nodejs.org/download/release/v0.12.0/))
+Gets the streets from OpenStreetMap and creates a CSV with the names, and the "clean" names (without language-specific prefixes and suffixes).
 
-Descargar el proyecto:
+Requires the following parameters:
 
-```
-git clone https://github.com/geochicasosm/data_scripts_lascallesdelasmujeres.git
-```
+- `--city`: the city name, which will match the folder in `/data`
+- `--language`: the language of the street names, see [this file](scripts/utils/languages.ts) for a list of supported languages
+- `--relation`: the relation ID obtained from [OSM](https://www.openstreetmap.org/)
 
-Instalación de paquetes:
+### 2. `npm run wikipedia-step -- --city=milano --language=it`
 
-```
-npm install
-```
+Classifies the streets from the previous step by querying Wikidata and Wikipedia.
 
-# Instrucciones
+Requried parameters match the ones from step 1.
 
-### _Paso 1_
+### 3. `npm run inspect-unsure -- --city=milano --lang=it`
 
-Buscar [AQUÍ](https://www.openstreetmap.org/relation/11) el ID de OSM de la ciudad a tratar.
+Inspects the streets that were classified as "unsure" by the previous step.
 
-Crear una carpeta dentro de la carpeta "data" del proyecto, con el nombre de la ciudad a tratar, en minúsculas y sin espacios. Ejemplos:
+You will be provided with a list of modes to choose from. If you want to use the OpenAI API, create a `.env` file with the following structure:
 
-**barcelona**
-
-**sanjose**
-
-**buenosaires**
-
-### _Paso 2_
-
-Ejecutar:
-
-```
-npm run initial-step -- --city=nombreciudad --relation=relationID
+```env
+OPENAI_API_KEY=YOUR_API_KEY
 ```
 
-- Ejemplo: **npm run initial-step -- --area=[2.0875,41.2944,2.2582,41.4574] --city=barcelona --relation=347950**
+> [!NOTE]
+> On average, manual classification takes around ~17 seconds/record.
 
-Se generan los ficheros:
+### 4. `npm run finalize -- --city=milano --lang=it`
 
-- nombreciudad_streets.geojson
-- list.csv
-- list_genderize.csv
-
-### _Paso 3_
-
-Aplicar el script que elimina las calles clasificadas como "unknown" (ni de mujer, ni de hombre) y búsqueda de los articulos de Wikipedia para las calles con nombre de mujer:
-
-```
-npm run wikipedia-step -- --city=nombreciudad
-```
-
-_\*Para deshabilitar el descarte automático de calles "Unknown" usar el flag `--keepUnknown`_
-
-Se genera el fichero 'list_genderize_wikipedia.csv'.
-
-### _Paso 5_
-
-Revisar manualmente el fichero anterior:
-
-- Eliminar calles que no son de persona
-- Corregir errores en la clasificación male/female. El factor de fiabilidad es 2,-2 (Mujer,Hombre).
-- Corregir y añadir enlaces de Wikipedia (las calles con nombre de hombre no necesitan enlace)
-
----
-
-#### Criterios para eliminar o mantener calles:
-
-Se _ELIMINA_ si:
-
-- Hace alusión a flora o fauna
-- Hace alusión a momentos históricos (La Batalla de Pavón)
-- Hace alusión a objetos inanimados (Esmeralda = Buque Argentino)
-
-Se _MANTIENE_ si:
-
-- Lleva el nombre de una santa
-- Lleva el nombre de una deidad femenina con representación de mujer (Venus)
-
----
-
-Guardar el fichero corregido en la misma carpeta del proyecto, con el nombre:
-
-**nombreciudad_finalCSV.csv**
-
-_ATENCIÓN_: Es muy importante que el separador de campos utilizado en el CSV sea el ";", en caso contrario no funcionará.
-
-### _Paso 6_
-
-Ejecutar:
-
-```
-npm run final-step -- --city=nombreciudad
-```
-
-Se generan tres ficheros:
-
-- **final_tile.geojson** Fichero final que se cargará en el mapa
-- **stats.txt** fichero con estadísticas de los datos
-- **noLinkList.txt** Fichero con el listado de calles sin artículo en wikipedia
-
-## Para acabar
-
-Haznos llegar los tres ficheros generados y añadiremos tu ciudad al mapa!
-
----
-
-## Contribuir con el proyecto
-
-Únete a nuestro canal de slack [#lascallesdelasmujeres](https://join.slack.com/t/geochicas-osm/shared_invite/enQtMzIzMzUyMDQyNjczLTU0YjYzNTQ2ZWRkOWQwZGJlNGY4NjhmODY4Y2M2M2Y2MDM3M2EyZTg4NWI0ODY2ZWRhZGIyN2JjMDc0ZDdlODE) si te interesa contribuir.
-
-## Coordinadora Técnica
-
-- **Jessica Sena** (_España_) - [@jsenag](https://jessisena.github.io/myprofile-cra/)
-  Ingeniera informática, desarrolladora web/móvil en ámbito geo.
-
-## Licencia
-
-This project is licensed under _CC BY-SA_ License - see the [CC BY-SA](https://creativecommons.org/licenses/by-sa/4.0/) file for details
-
-## Reconocimientos
-
-- [Proyecto](https://blog.mapbox.com/mapping-female-versus-male-street-names-b4654c1e00d5) _Mapping female versus male street names_ de Mapbox por [Aruna Sankaranarayanan](https://www.mapbox.com/about/team/aruna-sankaranarayanan/)
-
-- [Open Street Map](https://www.openstreetmap.org/)
-
-- [Wikipedia API](https://www.mediawiki.org/wiki/API:Main_page/es)
-
+Generates the final GeoJSON file you can then use in the website.
